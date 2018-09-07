@@ -1,0 +1,316 @@
+<!-- 不要轻易动此组件代码，逻辑杂到你头皮发麻！ -->
+<template lang="html">
+  <!-- 历史三维组件 -->
+  <div class="historical">
+    <!-- 场景时间轴 -->
+    <div class="historical-Time">
+      <el-card class="box-card-Time" :body-style="{ padding: '5px' }">
+        <el-radio-group v-model="radio" @change="handleRadio">
+          <el-radio-button :label="item.spaceId + '年'" v-for="(item, index) of HDlayers" :key="item.spaceId" ref="radioButton"></el-radio-button>
+        </el-radio-group>
+      </el-card>
+    </div>
+    <!-- 单模型时间轴 -->
+    <div class="historical-Model" v-if="showHisModel">
+      <el-card class="box-card-Model" :body-style="{ padding: '0px' }">
+        <div class="model-name">
+          <span>模型ID：</span><span>{{Model}}</span>
+        </div>
+        <div class="box-slider">
+          <el-slider v-model="sliderValue" :max="HDlayers.length-1" :show-tooltip="false" show-stops @change="handleModelAxias"></el-slider>
+        </div>
+        <table class="table-year">
+          <td v-for="item of HDlayers" :key="item.spaceId">{{item.spaceId}}</td>
+        </table>
+      </el-card>
+    </div>
+  </div>
+</template>
+
+<script>
+import {
+  mapState,
+  mapMutations,
+  mapActions
+} from 'vuex'
+import axios from "axios"
+
+export default {
+  name: 'HistoricalDimensional',
+  data() {
+    return {
+      radio: '',
+      sliderValue: 0,
+      initSlider: 0,
+      showModel: null,
+      jsonData: [],
+      jsonModelID: [],
+      sliderLast: 0,
+      HDbuildId: [],
+      HDbuildlayer: null,
+      newArrs: [],
+      btnTf: false
+    }
+  },
+  props: {
+    HDlayers: Array,
+    Model: String,
+    buildlayer: Object,
+    buildId: Array,
+    varTime: String,
+    sonSlider: Number
+  },
+  watch: {
+    HDlayers: {
+      immediate: true,
+      handler: function(val) {
+        this.radio = this.HDlayers[0].spaceId.toString() + "年"
+      }
+    },
+    sonSlider: {
+      handler: function(val, oldVal) {
+        if (val != null) {
+          this.sliderValue = val
+          this.$emit('resonSlider', oldVal)
+          this.clearLastScene()
+          this.HDbuildId = []
+          this.jsonModelID = []
+          this.sliderLast = val
+          for (let i = 0; i < this.HDlayers[val].length; i++) {
+            this.HDlayers[val][i].setObjsVisible([], false)
+          }
+        }
+      },
+      immediate: true
+    }
+  },
+  computed: {
+    ...mapState({
+      showHisModel: state => state.scene.showHisModel,
+    })
+  },
+  methods: {
+    ...mapMutations([
+      'handleShowHisModel'
+    ]),
+    handleRadio(e) {
+      if (this.HDbuildlayer != null && this.newArrs.length > 0) {
+        this.HDbuildlayer.setOnlyObjsVisible(this.newArrs, true)
+      }
+      this.clearLastScene()
+      for (let i = 0; i < this.HDlayers.length; i++) {
+        // 点击对应年份的layers显示
+        if (this.HDlayers[i].spaceId.toString() + "年" == e) {
+          for (let j = 0; j < this.HDlayers[i].length; j++) {
+            this.HDlayers[i][j].setObjsVisible([], false)
+            if (this.HDlayers[i][j].name == APPCONFIG.Analysis.default.scenes[i].building) {
+              EventBus.$emit('mapName', this.HDlayers[i][j].name);
+            }
+          }
+          if (this.$refs.radioButton[i].label == e) {
+            this.sliderValue = i
+            this.initSlider = this.sliderValue
+            this.sliderLast = i
+          }
+        }
+      }
+      this.handleShowHisModel(false)
+      this.clearAllModel(e)
+      let newTime = '建筑变迁'
+      this.$emit('updateTime', newTime)
+      this.$emit('updateYear', e.substring(0, e.length - 1))
+    },
+    // 将所有的layer设置为不可见
+    clearLastScene() {
+      for (let i = 0; i < this.HDlayers.length; i++) {
+        for (let j = 0; j < this.HDlayers[i].length; j++) {
+          this.HDlayers[i][j].visible = false
+        }
+      }
+    },
+    attrClickModel(e) {
+      let s3mlayers = []
+      let layers = this.HDlayers
+      for (let i = 0; i < layers.length; i++) { // 循环所有realspace
+        for (let j = 0; j < layers[i].length; j++) { // 循环该realspace中的S3M
+          if (layers[i][j].visible == true) {
+            if (e == false) {
+              if (s3mlayers.length != 0) {
+                layers[i][j].setOnlyObjsVisible(s3mlayers, true) // 将之前操作的模型
+                s3mlayers = []
+              }
+            } else {
+              this.$message.success('开启成功，请点击建筑模型')
+            }
+          }
+        }
+      }
+    },
+    delClickModel(e) {
+      let s3mlayers = []
+      let layers = this.HDlayers
+      for (let i = 0; i < layers.length; i++) { // 循环所有realspace
+        for (let j = 0; j < layers[i].length; j++) { // 循环该realspace中的S3M
+          if (layers[i][j].visible == true) {
+            if (e == false) {
+              if (s3mlayers.length != 0) {
+                layers[i][j].setOnlyObjsVisible(s3mlayers, true) // 将之前操作的模型
+                s3mlayers = []
+              }
+            } else { // 开启模型历史功能
+              this.$message.success('开启成功，请点击建筑模型')
+            }
+          }
+        }
+      }
+    },
+    handleHisModel(e) {
+      let layers = this.HDlayers
+      for (let i = 0; i < layers.length; i++) { // 循环所有realspace
+        for (let j = 0; j < layers[i].length; j++) { // 循环该realspace中的S3M
+          if (layers[i][j].visible == true) {
+            if (e == false) {
+              this.clearAllModel(layers[i].spaceId + '年')
+              this.sliderLast = 0
+              this.sliderValue = 0
+              this.jsonModelID = []
+              this.HDbuildId = []
+              this.handleShowHisModel(e) // 关闭单模型时间轴
+            } else { // 开启模型历史功能
+              this.$message.success('开启成功，请点击建筑模型')
+            }
+          }
+        }
+      }
+    },
+    handleModelAxias(e) {
+      let layers = this.HDlayers
+
+      // 如果时间轴点击返回初始年份，逻辑如下
+      if (e == this.initSlider && e == this.sliderValue) {
+        // 显示所有初始年份的建筑
+        this.buildlayer.setObjsVisible([], false)
+        // 隐藏上一次操作的年份建筑
+        this.showModel.setObjsVisible([], true)
+        this.Model = this.buildId[0]
+        this.HDbuildId = []
+        this.jsonModelID = []
+        this.sliderLast = this.initSlider
+      } else {
+        // 初始化点击模型的S3M和ModelID
+        if (this.HDbuildId.length == 0) {
+          this.HDbuildId = this.buildId
+          this.HDbuildlayer = this.buildlayer
+        }
+
+        //隐藏上一年显示的模型
+        if (this.jsonModelID.length != 0) {
+          this.HDbuildlayer.setObjsVisible([], true)
+        } else {
+          this.HDbuildlayer.setObjsVisible(this.HDbuildId, false)
+        }
+
+        // 获取点击年份的ModelID
+        this.jsonModelID = []
+        for (let k in this.jsonData) {
+          if (k == this.sliderLast + '-' + this.HDbuildId[0]) {
+            this.jsonModelID.push(this.jsonData[k][e])
+          }
+        }
+        if (this.jsonModelID.length == 0) {
+          this.$message.error("该模型无此年数据！")
+          return
+        }
+
+        //显示点击年份的模型
+        for (let i = 0; i < layers[e].length; i++) {
+          if (layers[e][i].name == APPCONFIG.Analysis.default.scenes[e].building) {
+            this.showModel = layers[e][i]
+          }
+        }
+        this.showModel.setObjsVisible(this.jsonModelID, true)
+
+        this.HDbuildId = this.jsonModelID
+        this.HDbuildlayer = this.showModel
+        this.Model = this.jsonModelID[0] // 替换时间轴显示的ModelID
+        this.sliderLast = e
+      }
+    },
+    getAllModelIDSucc(res) {
+      this.jsonData = res.data
+    },
+    clearAllModel(e) {
+      this.clearLastScene()
+      for (let i = 0; i < this.HDlayers.length; i++) {
+        // 点击对应年份的layers显示
+        if (this.HDlayers[i].spaceId.toString() + "年" == e) {
+          for (let j = 0; j < this.HDlayers[i].length; j++) {
+            this.HDlayers[i][j].visible = true
+          }
+          if (this.$refs.radioButton[i].label == e) {
+            this.sliderValue = i
+            this.initSlider = this.sliderValue
+            this.sliderLast = i
+          }
+        }
+      }
+      this.HDbuildId = []
+      this.HDbuildlayer = null
+    }
+  },
+  mounted() {
+    EventBus.$on('handleHisModel', this.handleHisModel)
+    EventBus.$on('delClickModel', this.delClickModel)
+    EventBus.$on('attrClickModel', this.attrClickModel)
+    var that = this;
+    EventBus.$on('yearSwitch', enewArrs => {
+      that.newArrs = enewArrs
+    })
+    axios.get('./../../../static/data/modelID.json').then(this.getAllModelIDSucc)
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.historical-Time {
+    position: absolute;
+    bottom: 20%;
+    right: 1%;
+    z-index: 9999;
+    .box-card-Time {
+        width: auto;
+    }
+}
+.historical-Model {
+    position: absolute;
+    top: 10%;
+    left: 4.5%;
+    .box-card-Model {
+        width: 300px;
+        .model-name {
+            width: 100%;
+            color: #FFF;
+            font-weight: bold;
+            padding: 5px;
+            background: #5098EA;
+        }
+        .box-slider {
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-top: 8px;
+        }
+        .table-year {
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            td:first-child {
+                text-align: left;
+            }
+            td:last-child {
+                text-align: right;
+            }
+        }
+    }
+}
+</style>

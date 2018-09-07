@@ -1,0 +1,57 @@
+{
+  "took": 8,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 2886,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "ind": {
+      "doc_count_error_upper_bound": -1,
+      "sum_other_doc_count": 2421,
+      "buckets": [{
+          "key": "金融街北区",
+          "doc_count": 93,
+          "sum_value": {
+            "value": 1982024
+          }
+        },
+        {
+          "key": "马连道茶叶街",
+          "doc_count": 93,
+          "sum_value": {
+            "value": 1559149
+          }
+        },
+        {
+          "key": "马甸桥区域",
+          "doc_count": 93,
+          "sum_value": {
+            "value": 1340032
+          }
+        },
+        {
+          "key": "天桥",
+          "doc_count": 93,
+          "sum_value": {
+            "value": 1328176
+          }
+        },
+        {
+          "key": "大栅栏大监测范围",
+          "doc_count": 93,
+          "sum_value": {
+            "value": 1120476
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?vwyssj');
+  src:  url('fonts/icomoon.eot?vwyssj#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?vwyssj') format('truetype'),
+    url('fonts/icomoon.woff?vwyssj') format('woff'),
+    url('fonts/icomoon.svg?vwyssj#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-rediantance:before {
+  content: "\e618";
+}
+.icon-icon-chongdie:before {
+  content: "\e62b";
+}
+.icon-relitu:before {
+  content: "\e655";
+}
+.icon-midu:before {
+  content: "\e607";
+}
+.icon-rect:before {
+  content: "\e901";
+}
+.icon-circle:before {
+  content: "\e902";
+}
+.icon-edit:before {
+  content: "\e903";
+}
+.icon-polygon:before {
+  content: "\e904";
+}
+.icon-number0:before {
+  content: "\e905";
+}
+.icon-number1:before {
+  content: "\e906";
+}
+.icon-number2:before {
+  content: "\e907";
+}
+.icon-number3:before {
+  content: "\e908";
+}
+.icon-number4:before {
+  content: "\e909";
+}
+.icon-number5:before {
+  content: "\e90a";
+}
+.icon-number6:before {
+  content: "\e90b";
+}
+.icon-threed:before {
+  content: "\e90c";
+}
+.icon-area:before {
+  content: "\e90d";
+}
+.icon-bigdata:before {
+  content: "\e90e";
+}
+.icon-bigger:before {
+  content: "\e90f";
+}
+.icon-delete:before {
+  content: "\e910";
+}
+.icon-design:before {
+  content: "\e911";
+}
+.icon-exit-fullscreen:before {
+  content: "\e912";
+}
+.icon-fullscreen:before {
+  content: "\e913";
+}
+.icon-fullscreen1:before {
+  content: "\e914";
+}
+.icon-locate:before {
+  content: "\e915";
+}
+.icon-measure:before {
+  content: "\e916";
+}
+.icon-query:before {
+  content: "\e917";
+}
+.icon-screenshot:before {
+  content: "\e918";
+}
+.icon-time:before {
+  content: "\e919";
+}
+.icon-home:before {
+  content: "\e91a";
+}
+.icon-paper-plane:before {
+  content: "\e900";
+}
+.icon-location2:before {
+  content: "\e948";
+}

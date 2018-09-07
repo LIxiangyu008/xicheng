@@ -1,0 +1,261 @@
+import L from 'leaflet';
+import Vue from 'vue'
+
+const state = {
+  currentBaseMapIndex: 0, //当前激活地图集合图层索引
+  baseMapLayersGroup: [], //底图图层集合数据
+  specialLayers: [], //专题图层数据
+  legendShow: true,
+  mapMode: '', //地图模式 2d/3d/23d三种模式,
+  isShowAllScreen: false, //是否全屏
+  isShowLegend: false, //是否显示图例
+  isShowMenu: true, //是否显示左侧菜单
+  geojsonDataFlag: false, //底部查询详情列表是否显示
+  isShowUploadBtn: false,
+  currentActiveLayerIndex: null, //当前默认激活layerId vuex不适合存放复杂对象
+  showBufferFlag: false,  //是否显示缓冲区分析
+  showListPop:false,
+  acitveDis:APPCONFIG.InitDis, //初始化时的行政区划
+  districtLayer:null, //行政区划图层
+  isVertical: true, //搜索框是否显示，默认显示
+  currentMapState: null, //当前地图CRS,
+  isMarkerListShow: false, //叠加风貌影像点，查询结果列表是否显示
+  markLayers:[], //根据不同模块查出的marker集合
+  graphics: [], // 高效率点图层
+  curMap:null, //编辑地图时激活的地图
+  isTabContentShow: true, //图片与视频显示状态切换，默认显示图片
+  dialogVisible: false, //弹出框 图片
+  dialogVisibleVideo: false, //弹出框 视频
+  isCarouselShow: false, //走马灯 图片
+  analysisShow: false, // 分析侧边栏
+  analysisParams: [], // 热力分析图层
+  sensorData:[],//白塔寺监控信息数据
+  showStatPanel: false,//展示日统计面板
+  deviceInfo:null,//设备信息
+  baitasiMarkerQuota:'NOISE',
+  mobileInfo:null,//移动信息
+  telecomInfo:null,//电信信息
+  unicomInfo:null,//联通信息
+  times:[],//统计时间段数组
+  pieChartData:null,//环形图标数据
+  distTitle:"西城区",//手机信令右侧title展示区划名
+  timeTitle:'2018-05-01 00:00:00 至 2018-05-01 23:00:00',//手机信令右侧title展示时间段
+}
+
+const getters = {
+
+}
+
+const mutations = {
+  changeDistTitle(state,data){
+    state.distTitle = data;
+  },
+  changeTimeTitle(state,data){
+    state.timeTitle = data;
+  },
+  changePieChartData(state,data){
+    state.pieChartData = data;
+  },
+  changeTimes(state,times){
+    state.times = times;
+  },
+  changeTelecomInfo(state,telecom){
+    state.telecomInfo = telecom;
+  },
+  changeUnicomInfo(state,unicom){
+    state.unicomInfo = unicom;
+  },
+  changeMobileInfo(state,mobile){
+    state.mobileInfo = mobile;
+  },
+  changeDeviceInfo(state,info){
+    state.deviceInfo = info;
+  },
+  changeStatPanel(state,flag){
+    state.showStatPanel = flag;
+  },
+  changeManageMap(state,layer){
+    state.curMap = layer;
+  },
+  addDistrictLayer(state,layer){
+    state.districtLayer = layer;
+  },
+  removeDistrictLayer(state){
+    state.districtLayer = null;
+  },
+  changeDistrict(state,district){
+    state.acitveDis = district
+  },
+  changListShow(state,flag){
+    state.showListPop = flag;
+  },
+  changeCurrentActiveLayer(state, index) {
+    state.currentActiveLayerIndex = index;
+  },
+  changeUploadBtn(state, flag) {
+    if (flag && state.showBufferFlag) {
+      state.showBufferFlag = false;
+    }
+    state.isShowUploadBtn = flag;
+  },
+  changeGeoJsonDataFlag(state, flag) {
+    state.geojsonDataFlag = flag;
+  },
+  changeShowMenu(state, isShowMenu) {
+    state.isShowMenu = isShowMenu
+  },
+  showHideLegend(state, isShowLegend) {
+    state.isShowLegend = isShowLegend;
+  },
+  changeMapMode(state, mapMode) {
+    state.mapMode = mapMode;
+  },
+  changeShowAllScreen(state, isShowAllScreen) {
+    state.isShowAllScreen = isShowAllScreen;
+  },
+  //查询框显示状态修改
+  changeQueryWin(state, isVertical){
+    state.isVertical = isVertical;
+  },
+  //marker查询列表显示状态修改
+  changeMarkerQueryList(state, isMarkerListShow){
+      state.isMarkerListShow = isMarkerListShow;
+  },
+  //marker查询列表显示状态修改
+  changeTabContentShow(state, isTabContentShow){
+    state.isTabContentShow = isTabContentShow;
+  },
+  //修改弹窗中显示图片或是视频
+  changeDialogVisibleVideo(state, dialogVisibleVideo){
+    state.dialogVisibleVideo = dialogVisibleVideo;
+  },
+  //走马灯根据年份控制
+  changeIsCarouselShow(state, isCarouselShow){
+    state.isCarouselShow = isCarouselShow;
+  },
+  //弹出窗状态改变
+  changeDialogVisible(state, dialogVisible){
+    state.dialogVisible = dialogVisible;
+  },
+  addBaseMapLayersGroup(state, baseMapLayersGroup) {
+    state.baseMapLayersGroup = baseMapLayersGroup;
+  },
+  addLegend(state, {
+    layer,
+    legend
+  }) {
+    for (let i = 0; i < state.specialLayers.length; i++) {
+      if (state.specialLayers[i].url == layer.url) {
+        state.specialLayers[i].legend = legend;
+        break;
+      }
+    }
+  },
+  addLayer(state, layer) {
+    layer.zIndex = state.specialLayers.length == 0 ? 10 : state.specialLayers.length * 10; //默认设置zIndex 方便后续调整图层顺序
+    state.specialLayers.push(layer);
+  },
+  removeAllSLayer(state) {
+    for (let i = 0; i < state.specialLayers.length; i++) {
+      state.specialLayers.splice(i, 1);
+    }
+  },
+  removeLayer(state, layer) {
+    for (let i = 0; i < state.specialLayers.length; i++) {
+      if (state.specialLayers[i].url == layer.url) {
+        state.specialLayers.splice(i, 1);
+        break;
+      }
+    }
+  },
+  showHideLayer(state, {
+    layer,
+    flag
+  }) {
+    for (let i = 0; i < state.specialLayers.length; i++) {
+      if (state.specialLayers[i].url == layer.url) {
+        state.specialLayers[i].visible = flag;
+        break;
+      }
+    }
+
+  },
+  changeSpecialLayer(state, specialLayers) {
+    state.specialLayers = specialLayers
+  },
+  changeLayerOpacity(state, {
+    layer,
+    opacity
+  }) {
+    for (var i = 0; i < state.specialLayers.length; i++) {
+      if (state.specialLayers[i].url == layer.url) {
+        state.specialLayers[i].opacity = opacity
+      }
+    }
+  },
+  changeCurrentBaseMapIndex(state, index) {
+    state.currentBaseMapIndex = index;
+    var templayer = state.baseMapLayersGroup[0];
+    Vue.set(state.baseMapLayersGroup, 0, state.baseMapLayersGroup[index]);
+    Vue.set(state.baseMapLayersGroup, index, templayer);
+  },
+  changeLayerZIndex(state, {
+    downLayer,
+    upLayer
+  }) {
+    for (let i = 0; i < state.specialLayers.length; i++) {
+      if (state.specialLayers[i].url == downLayer.url) {
+        var templayer = state.specialLayers[i];
+        for (let j = 0; j < state.specialLayers.length; j++) {
+          if (state.specialLayers[j].url == upLayer.url) {
+            Vue.set(state.specialLayers, i, state.specialLayers[j]);
+            Vue.set(state.specialLayers, j, templayer);
+            break;
+          }
+        }
+      }
+    }
+  },
+  changeBufferState(state, bufferState) {
+    if (bufferState && state.isShowUploadBtn) {
+      state.isShowUploadBtn = false;
+    }
+    state.showBufferFlag = bufferState;
+  },
+  storeCurrentMapState(state, crs) {
+    state.currentMapState = crs;
+  },
+  addMarkLayers(state,layer){
+    state.markLayers = layer;
+  },
+  removeAllMarkLayer(state) {
+    state.markLayers = [];
+  },
+  removeGraphics(state){
+    state.graphics = [];
+  },
+  changeGraphics(state,graphics){
+    state.graphics = graphics;
+  },
+  changeAnlysisShow(state,analysisShow){
+    state.analysisShow = analysisShow;
+  },
+  removeAnalysisParams(state){
+    state.analysisParams = [];
+  },
+  changeAnalysisParams(state, analysisParams){
+    state.analysisParams = analysisParams;
+  },
+  changeSensorData(state, sensorData ){
+      state.sensorData = sensorData;
+  },
+  changeBaitasiMarkerQuota(state,baitasiMarkerQuota){
+      state.baitasiMarkerQuota = baitasiMarkerQuota;
+  }
+}
+
+export default {
+  state,
+  getters,
+  mutations
+}

@@ -1,0 +1,65 @@
+{
+    "took": 20,
+    "timed_out": false,
+    "_shards": {
+      "total": 5,
+      "successful": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    "hits": {
+      "total": 4374,
+      "max_score": 0,
+      "hits": []
+    },
+    "aggregations": {
+      "ind": {
+        "doc_count_error_upper_bound": -1,
+        "sum_other_doc_count": 3723,
+        "buckets": [
+          {
+            "key": "西城区",
+            "doc_count": 93,
+            "sum_value": {
+              "value": 37622864
+            }
+          },
+          {
+            "key": "广安门外",
+            "doc_count": 93,
+            "sum_value": {
+              "value": 4374641
+            }
+          },
+          {
+            "key": "金融街",
+            "doc_count": 93,
+            "sum_value": {
+              "value": 3317879
+            }
+          },
+          {
+            "key": "展览路",
+            "doc_count": 93,
+            "sum_value": {
+              "value": 3133237
+            }
+          },
+          {
+            "key": "天桥",
+            "doc_count": 186,
+            "sum_value": {
+              "value": 2656352
+            }
+          },
+          {
+            "key": "月坛",
+            "doc_count": 93,
+            "sum_value": {
+              "value": 2616159
+            }
+          }
+        ]
+      }
+    }
+  }

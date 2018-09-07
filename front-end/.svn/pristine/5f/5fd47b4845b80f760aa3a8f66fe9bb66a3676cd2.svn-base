@@ -1,0 +1,49 @@
+<template lang="html">
+  <div class="timelist">
+    <el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <span>历史重点区域</span>
+      </div>
+      <div v-for="item in tableData" :key="item" class="itemName" :title="item.Name" @click="clickAreaName">
+        {{item.Name + ':' + item.Year}}
+      </div>
+    </el-card>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'TimeList',
+  data() {
+    return {
+      tableData: [{
+        Name: '变化区域1',
+        Year: '2016-2017'
+      }, {
+        Name: '变化区域2',
+        Year: '2016-2017'
+      }, {
+        Name: '变化区域3',
+        Year: '2016-2017'
+      }]
+    }
+  },
+  methods: {
+    clickAreaName(item) {
+
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.timelist {
+    position: absolute;
+    top: 10%;
+    left: 4.5%;
+    .itemName{
+      font-size: 14px;
+      cursor: pointer;
+    }
+}
+</style>

@@ -1,0 +1,265 @@
+$lightBlue:#5098EA;
+$backColor:#4072BB;
+$white:#fff;
+$gray:#808080;
+$middleGray:#d0d1d2;
+$lightGray:#f0f0f0;
+
+.header{
+  background-color: $lightBlue;
+  padding:0;
+  .logo-span{
+      line-height: 74px;
+      padding: 0px 18px;
+      font-size: 30px;
+      color: $white;
+      background: $lightBlue;
+      height: 100%;
+      display: inline-block;
+  }
+  .name-span{
+      color: $white;
+      font-size: 24px;
+      padding-left: 0px;
+  }
+}
+
+.aside {
+    background: $backColor;
+    width: 94px;
+}
+
+.map-sidebar {
+  border-right: 1px solid $lightBlue;
+}
+
+.header-menu{
+  background-color:$backColor;
+  color:$gray !important;
+  &:hover{
+    color:$middleGray;
+    background: $lightBlue;
+  }
+  li.is-active,li:hover{
+    cursor: pointer !important;
+    color: $white !important;
+    background:$lightBlue!important;
+  }
+}
+.menu {
+    background:$backColor;
+    text-align: center;
+    border-right: none !important;
+    color:$middleGray;
+
+    &>li {
+        padding: 20px 0 !important;
+        color: $middleGray;
+        transition: all .3s;
+    }
+
+    .el-menu-item {
+      height: auto;
+      line-height: normal;
+    }
+
+    .el-menu-item [class^=el-icon-] {
+      width: auto;
+    }
+
+    i {
+        font-size: 40px !important;
+        width: auto;
+        color: $middleGray;
+    }
+
+    p {
+        font-size: 16px;
+        white-space: pre-wrap;
+        padding-top: 5px;
+    }
+
+    li.is-active,li:hover{
+      i{
+        cursor: pointer !important;
+        color: $white !important;
+      }
+        cursor: pointer !important;
+        color: $white !important;
+        background:$lightBlue;
+    }
+}
+
+.el-menu-item.is-active, .el-menu-item:hover{
+  i{
+    color: $lightBlue !important;
+  }
+  color: $lightBlue !important;
+}
+
+.el-icon-search{
+    color:$lightBlue
+}
+
+.sidebar{
+  .title{
+    color: $gray;
+    padding: 10px;
+    padding-left: 20px;
+  }
+  i{
+    color:$lightBlue
+  }
+  .el-input{
+    width: 98%;
+    background-color: $lightGray;
+    border-radius: 25px;
+  }
+  .el-input-group__append,.el-input-group__prepend {
+    background-color: $lightGray;
+    border-radius: 25px;
+    padding: 0 7px;
+    font-size: 17px;
+    border: none;
+  }
+  .el-input__inner {
+    border: none;
+    border-radius: 25px;
+    background-color: $lightGray;
+  }
+}
+
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    border: none !important;
+    box-shadow: 1px 1px 12px $middleGray !important;
+  }
+.leaflet-bar a, .leaflet-bar a:hover {
+    background-color: $white !important;
+    border-bottom: none !important;
+    color: $lightBlue !important;
+}
+.leaflet-bar .leaflet-disabled {
+  color: $lightGray !important;
+}
+
+.leaflet-control-zoom a {
+  font-size: 18px !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner{
+    background-color: $lightBlue;
+    border-color: $lightBlue;
+}
+.el-menu--horizontal>.el-menu-item.is-active {
+    border-bottom: none;
+    color: $lightBlue;
+}
+.el-checkbox__inner:hover {
+    border-color: $lightBlue;
+}
+.el-table th{
+    background: $lightBlue;
+    color: $white;
+}
+.base-map-control li{
+    border: 2px $lightBlue solid !important;
+}
+.change-wrap .item-span{
+  color:$lightBlue !important
+}
+.el-dropdown-menu__item:hover,.el-dropdown-menu__item:focus,.el-dropdown-menu__item.is-active{
+  color:$lightBlue
+}
+.district-lable .qhspan:hover{
+  background:$lightBlue;
+  color:$white;
+}
+.user-detail{
+  color:$white;
+  i{
+    color: $lightBlue;
+    background:$white;
+    border-radius:50%;
+  }
+  .first{
+    font-size: 40px;
+    vertical-align: middle;
+    padding-right: 10px;
+  }
+}
+
+.query-box,.map-toolbar{
+    border-radius: 0px !important;
+    box-shadow: 0 1px 15px #d0d1d2 !important;
+    -webkit-box-shadow: 0 1px 15px #d0d1d2 !important;
+}
+.district-select{
+  .el-select{
+    width:98px
+  }
+}
+
+.leaflet-draw-toolbar{
+  a {
+    background-image: none !important;
+  }
+  .leaflet-draw-draw-polygon,.leaflet-draw-draw-rectangle,.leaflet-draw-draw-circlemarker,.leaflet-draw-edit-remove,.el-icon-edit-outline,.leaflet-draw-draw-marker{
+    font-family: 'icomoon' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    font-size:15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .leaflet-draw-draw-rectangle:before {
+    content: "\E901";
+  }
+  .leaflet-draw-draw-polygon:before {
+    content: "\E904";
+  }
+  .leaflet-draw-draw-circlemarker:before{
+    content: "\E902";
+  }
+  .leaflet-draw-edit-remove:before{
+    content: "\E910";
+  }
+  .el-icon-edit-outline:before{
+    content: "\E903";
+  }
+  .leaflet-draw-draw-marker:before{
+    content: "\E915";
+  }
+}
+
+.leaflet-querybtn-control i{
+  color:$lightBlue
+}
+
+.res-aside {
+  border-right: 1px solid $lightBlue;
+}
+
+.l-map.leaflet-container a.leaflet-popup-close-button {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    border: none;
+    padding: 0;
+    width: auto;
+    height: auto;
+    text-align: center;
+    font: 22px/18px Tahoma, Verdana, sans-serif;
+    color: #dcdfe6;
+    text-decoration: none;
+    font-weight: bold;
+    background: transparent;
+    transition: all .3s;
+
+  &:hover {
+    transform: rotate(180deg);
+    color: #ebeef5;
+  }
+}

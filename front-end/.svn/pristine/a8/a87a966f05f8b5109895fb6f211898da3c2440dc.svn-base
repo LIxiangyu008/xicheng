@@ -1,0 +1,86 @@
+<template>
+  
+</template>
+
+<script>
+  import L from 'leaflet'
+  import pathMixin from './../mixins/pathMixin'
+
+  const events = [
+    'click',
+    'dblclick',
+    'mousedown',
+    'mouseover',
+    'mouseout',
+    'contextmenu',
+    'add',
+    'remove',
+    'popupopen',
+    'popupclose',
+    'tooltipopen',
+    'tooltipclose'
+  ]
+
+  const props = {
+    smoothFactor: {
+      type: Number,
+    },
+    noClip: {
+      type: Boolean,
+    },
+    interactive: {
+      type: Boolean,
+      default: true
+    },
+    pane: {
+      type: String,
+    },
+    attribution: {
+      type: String
+    },
+    options: {
+      type: Object,
+      default: () => {}
+    },
+  }
+ 
+  export default {
+    name: 'circula',
+    mixins: [pathMixin],
+    props: {
+      ...props,
+      bounds: {
+        type: [Array, Object]
+      }
+    },
+
+    mounted() {
+      let layerOptions = this.mixinPropOption(this._props, props);
+
+      this.leaflet = L.rectangle(this.bounds, layerOptions);
+
+      this.addEventHook(this.leaflet, events);
+
+      if (this.$parent._isMounted) {
+        this._initHooks(this.$parent);
+      }
+    },
+    watch: {
+      bounds(val, newVal) {
+        this.leaflet.setBounds(val);
+      },
+      smoothFactor(val, newVal) {
+        this.leaflet.setSmoothFactor(val);
+      },
+      noClip(val, newVal) {
+        this.leafelt.setNoClip(val);
+      }
+    },
+    beforeDestroy() {
+      let parent = this.$parent.leaflet;
+      if (parent) {
+        parent.removeLayer(this.leaflet);
+      }
+    }
+  }
+</script>

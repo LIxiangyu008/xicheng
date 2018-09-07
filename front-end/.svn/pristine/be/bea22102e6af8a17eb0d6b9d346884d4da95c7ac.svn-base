@@ -1,0 +1,1606 @@
+<template>
+  <div>
+    <l-map ref="map" class="leaflet-map" :options="mapOptions" v-if="mapOptions" @l-click="onMapClick" @l-zoom="mapZoomListen">
+      <l-layer-group ref="baseMapLayersGroup">
+        <template v-for="(item, index) in baseMapLayers">
+          <l-wms-tilelayer
+            v-if="item.layerType == 'WMS111'"
+            :key="item.key" :url="item.url"
+            :version="'1.1.1'"
+            :options="item.options"
+            >
+          </l-wms-tilelayer>
+          <l-wms-tilelayer
+            v-else-if="item.layerType == 'WMS130'"
+            :key="item.key"
+            :url="item.url"
+            :version="'1.3.0'"
+            :options="item.options"
+            >
+          </l-wms-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'WMTS'"
+            :key="item.key"
+            :url="item.url"
+            :options="item.options"
+            >
+          </l-wmts-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'WMTS100'"
+            :key="item.key"
+            :url="item.url"
+            :options="item.options"
+            >
+          </l-wmts-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'SGSWMTS100'"
+            :key="item.key"
+            :url="item.url"
+            :options="item.options"
+            >
+          </l-wmts-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'WMTS-china'"
+            :key="item.key"
+            :url="item.url"
+            :options="item.options"
+            >
+          </l-wmts-tilelayer>
+          <l-rest-tilelayer
+            v-else-if="item.layerType == 'SMRESTMAP'"
+            :key="item.key"
+            :url="item.url"
+            :layersID="item.layerName"
+            :transparent="true"
+            :options="item.options"
+            >
+          </l-rest-tilelayer>
+        </template>
+      </l-layer-group>
+      <l-layer-group ref="specialLayersGroup">
+        <template v-for="(item, index) in specialLayers">
+          <l-wms-tilelayer
+            v-if="item.layerType == 'WMS111'"
+            :key="item.resID"
+            :url="item.url"
+            :version="'1.1.1'"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-wms-tilelayer>
+          <l-wms-tilelayer
+            v-else-if="item.layerType == 'WMS130'"
+            :key="item.resID"
+            :url="item.url"
+            :version="'1.3.0'"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-wms-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'WMTS100'"
+            :key="item.resID"
+            :url="item.url"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-wmts-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'SGSWMTS100'"
+            :key="item.resID"
+            :url="item.url"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-wmts-tilelayer>
+          <l-wmts-tilelayer
+            v-else-if="item.layerType == 'WMTS-china'"
+            :key="item.resID"
+            :url="item.url"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-wmts-tilelayer>
+          <l-sfs-layer
+            v-else-if="item.layerType == 'SGSSFS110'"
+            :key="item.resID"
+            :url="item.url"
+            :keepInView="true"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            >
+          </l-sfs-layer>
+          <l-rest-tilelayer
+            v-else-if="item.layerType == 'SMRESTMAP'"
+            :key="item.resID"
+            :url="item.url"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            :layersID="item.layerName"
+            >
+          </l-rest-tilelayer>
+          <l-esri-dynamic-tilelayer
+            v-else-if="item.layerType == 'ArcGISREST'"
+            :key="item.resID" :url="item.url"
+            :options="item.options"
+            :zIndex="index * 10 || 5"
+            :opacity="item.opacity"
+            :visible="item.visible"
+            :proxy="arcgisProxy"
+            >
+          </l-esri-dynamic-tilelayer>
+        </template>
+      </l-layer-group>
+      <!-- 地图组件 -->
+      <l-draw  ref="draw" @draw-complete="drawSearch" @draw-clear="drawClear()"></l-draw>
+      <l-geojson :data="districtLayer" @l-layeradd="districtChange" @l-mouseout="districtOut" @l-mouseover="districtToolTip"></l-geojson>
+      <!-- <l-querybtn-control @l-query-compelete="startSlectQuery"></l-querybtn-control> -->
+      <l-graphiclayer :graphics="graphics" :onClick="graphClick"></l-graphiclayer>
+    </l-map>
+    <tab-list class="result-table" :tableListData="resultList" @l-row-click="queryByID"></tab-list>
+    <marker-query-list v-show="isMarkerListShow" :tabledata="QueryMarkerObj" :MediaInfo="MediaInfo"></marker-query-list>
+  </div>
+</template>
+
+<script>
+import Vue from "vue";
+import L from "leaflet";
+import axios from "axios";
+import FullScreen from "../common/FullScreen";
+import "./../../../static/lib/iclient9-leaflet.js";
+import "./../../../static/lib/iclient9-leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw/dist/leaflet.draw-src.js";
+import "./../../../static/lib/leaflet-measure-path.js";
+import "./../../../static/lib/leaflet-measure-path.css";
+import "leaflet-contextmenu";
+import "leaflet-contextmenu/dist/leaflet.contextmenu.min.css";
+import { serviceMgr } from "./serviceMeta.js";
+import {
+  LMap,
+  LWmsTilelayer,
+  LMarker,
+  LCircle,
+  LRestTilelayer,
+  LWmtsTilelayer,
+  LSfsLayer,
+  LLayerGroup,
+  LDraw,
+  LQuerybtnControl,
+  LEsriDynamicTilelayer,
+  LGeojson,
+  LPolyline,
+  LGraphiclayer
+} from "./../../package/leaflet/main";
+import { mapState, mapMutations, mapActions } from "vuex";
+import {
+  apiBaseMap,
+  apiGetUserInfo,
+  apiServiceCatalogServiceByID,
+  apiServiceCatalogByResID,
+  apiBufferService,
+  updateMap
+} from "@/apis/api";
+import { ServiceConfig } from "@/config/app-config";
+import {
+  smRestMapFindByGeometry,
+  smRestMapFindByDistance,
+  smQueryLayerInfo,
+  smRestMapFindBySql
+} from "./../common/supermapService";
+import {
+  convertBufferToLayer,
+  convertLayerToBufferParams
+} from "@/components/common/dfcUtil";
+import TabList from "./childrens/TabList.vue";
+import MarkerQueryList from "./childrens/MarkerQueryList.vue";
+import FunctionalTable from "./../common/FunctionalTabel";
+import SpecialTable from "./../common/SpecialTable";
+import { Loading } from "element-ui";
+import { sortServiceInfos } from "./../common/serviceUtil.js";
+import { convertMeterToRealLength } from "./../common/mapUtil.js";
+import "../../../static/lib/leaflet-heat.js";
+const CrsMap = {
+  "EPSG:4490": L.CRS.TianDiTu_WGS84,
+  "EPSG:4326": L.CRS.EPSG4326,
+  "EPSG:3857": L.CRS.EPSG3857,
+  "EPSG:900913": L.CRS.TianDiTu_Mercator
+};
+
+let queryLayer = null;
+let selectedFeatures = [],
+  impGeo = null,
+  drawHandler = null,
+  drawLayerGroup = new L.FeatureGroup(), //画点画线画面用layerGroup
+  bufferResultGroup = new L.FeatureGroup();
+let baseMarkerUrl = FMCONFIG.baseImgUrl; // static/config/app-config.js 配置
+let FMLayerName = FMCONFIG.FMLayerName; // static/config/app-config.js 配置
+let FMAxiosUrl = FMCONFIG.FMAxiosUrl; // static/config/app-config.js 配置
+let markerMapping = MARKERCONFIG.markerMapping;
+let popup = null;
+let serType = [
+  "SMRESTMAP",
+  "WMS111",
+  "WMS130",
+  "WMTS100",
+  "SGSWMTS100",
+  "SGSSFS110"
+];
+const defaultPathOptions = {
+    color: "#3388ff",
+    bubblingMouseEvents: false
+  }, //绘制点线面默认样式
+  activePathOptions = {
+    color: "red",
+    bubblingMouseEvents: false
+  }; //绘制点线面被激活样式
+
+let Analysis = APPCONFIG.Analysis,
+  sgsProxy = ServiceConfig.httpproxy;
+
+export default {
+  components: {
+    LMap,
+    LWmsTilelayer,
+    LMarker,
+    LCircle,
+    LRestTilelayer,
+    LWmtsTilelayer,
+    LSfsLayer,
+    LLayerGroup,
+    LEsriDynamicTilelayer,
+    LDraw,
+    LQuerybtnControl,
+    TabList,
+    MarkerQueryList,
+    FunctionalTable,
+    LGeojson,
+    LPolyline,
+    LGraphiclayer
+  },
+  data() {
+    return {
+      mapOptions: null,
+      MediaInfo: [],
+      baseMapLayers: [],
+      geojsonData: {},
+      activeIndex: 0,
+      maptype: "2d",
+      activeIndex: 0,
+      arcgisProxy: sgsProxy + "?url=",
+      resultList: [],
+      QueryMarkerObj: [],
+      paramSql: "",
+      params: {
+        name: "",
+        pageSize: 300,
+        options: {
+          startRecord: 0,
+          expectCount: 300
+          /*fromIndex:0,
+          toIndex:499,*/
+        }
+      },
+      tipTemplateName: "",
+      graphicData: [],
+      heatLayer: null,
+      analysisMap: {}  // 分析功能  全局map
+    };
+  },
+  mounted() {
+    this.initEvent();
+    this.initMapConfig(this.currentBaseMap, 0);
+  },
+  computed: {
+    ...mapState({
+      mapMode: state => state.map.mapMode,
+      baseMapLayersGroup: state => state.map.baseMapLayersGroup,
+      specialLayers: state => state.map.specialLayers,
+      legendShow: state => state.map.legendShow,
+      userInfo: state => state.user.userInfo,
+      currentBaseMapIndex: state => state.map.currentBaseMapIndex,
+      isShowAllScreen: state => state.map.isShowAllScreen,
+      isShowMenu: state => state.map.isShowMenu,
+      geojsonDataFlag: state => state.map.geojsonDataFlag,
+      currentActiveLayerIndex: state => state.map.currentActiveLayerIndex,
+      districtLayer: state => state.map.districtLayer,
+      acitveDis: state => state.map.acitveDis,
+      markLayers: state => state.map.markLayers,
+      isMarkerListShow: state => state.map.isMarkerListShow,
+      graphics: state => state.map.graphics,
+      analysisParams: state => state.map.analysisParams
+    }),
+    currentBaseMap() {
+      return this.baseMapLayersGroup[0];
+    }
+  },
+  watch: {
+    isShowAllScreen(val, oldVal) {
+      this.$refs.map.leaflet.invalidateSize(true);
+    },
+    isShowMenu(val, oldVal) {
+      this.$refs.map.leaflet.invalidateSize(true);
+    },
+    currentBaseMap(val, oldVal) {
+      if (val.type == "map") {
+        let currentMap = val;
+        this.initMapConfig(currentMap, 0);
+        this.activeIndex = 0;
+      }
+    },
+    currentActiveLayerIndex(val, oldVal) {
+      if (oldVal && drawLayerGroup.getLayer(oldVal)) {
+        drawLayerGroup
+          // .getLayer(oldVal)
+          .setStyle(defaultPathOptions)
+          // .disableEdit();
+      }
+      if (drawLayerGroup.getLayer(val)) {
+        // drawLayerGroup.getLayer(val).setStyle(activePathOptions);
+        drawLayerGroup.setStyle(activePathOptions);
+      }
+    },
+    mapMode(val, oldVal) {
+      this.maptype = val;
+    }
+  },
+  beforeDestroy() {
+    this.removeAllSLayer();
+    this.offEvent();
+    this.clearAll();
+  },
+  methods: {
+    ...mapActions(["getUserInfo"]),
+    ...mapMutations([
+      "addBaseMapLayersGroup",
+      "addLayer",
+      "removeLayer",
+      "changeLayerZIndex",
+      "addUser",
+      "changeGeoJsonDataFlag",
+      "removeAllSLayer",
+      "changListShow",
+      "changeCurrentActiveLayer",
+      "removeDistrictLayer",
+      "storeCurrentMapState",
+      // why
+      "addMarkLayers",
+      "removeAllMarkLayer",
+      "changeGraphics",
+      "removeGraphics",
+      "changeMarkerQueryList",
+      'changeAnalysisParams',
+      'changeAnlysisShow'
+    ]),
+    initEvent() {
+      EventBus.$on("sideBarCheck", this.priOnSideBarCheck);
+      EventBus.$on("tree-sideBarCheck", this.onSideBarCheck);
+      EventBus.$on("toolbar-measured", this.measure);
+      EventBus.$on("toolbar-clearAll", this.clearAll);
+      EventBus.$on("toolbar-fullwidth", this.fullWidth);
+      EventBus.$on("toolbar-fullscreen", this.fullScreen);
+      EventBus.$on("change-version", this.changeMapVersion);
+      EventBus.$on("toolbar-startBuffer", this.startBufferAnalysis);
+      EventBus.$on("toolbar-addTxtData", this.addTxtData);
+      EventBus.$on("toolbar-draw", this.drawLayer); //绘制点线面
+      EventBus.$on("query-poi", this.showPoi); //查询的兴趣点
+      EventBus.$on("query-seleted", this.showOne); //选中某点
+      EventBus.$on("query-inmarker", this.inMarker);
+      EventBus.$on("query-outmarker", this.outMarker);
+      EventBus.$on("toolbar-multiscreen", this.setMultiCfg);
+      EventBus.$on("tab-click", this.changeSelectFeature);
+      EventBus.$on("openHeatAnalysis", this.heatAnalysis); // 热力图分析
+      EventBus.$on("clearHeatMap", this.clearHeatMap); // 清除热力图
+      EventBus.$on("clear-queryData", this.clearQueryData); // 清除绘制查询的缓存数据
+      EventBus.$on("clear-highQueryLayer", this.clearHighQueryLayer); // 清除高级查询弹出层
+      EventBus.$on('query-mark', this.genaGeoLayer);  // 高级查询显示点位图标标志
+      EventBus.$on('buffer-analysis', this.bufferAnalysis);  // 缓冲区分析
+      EventBus.$on('clear-buffer', this.clearBuffer);  // 缓冲区分析
+    },
+    offEvent() {
+      EventBus.$off("sideBarCheck", this.priOnSideBarCheck);
+      EventBus.$off("tree-sideBarCheck", this.onSideBarCheck);
+      EventBus.$off("toolbar-measured", this.measure);
+      EventBus.$off("toolbar-clearAll", this.clearAll);
+      EventBus.$off("toolbar-fullwidth", this.fullWidth);
+      EventBus.$off("toolbar-fullscreen", this.fullScreen);
+      EventBus.$off("change-version", this.changeMapVersion);
+      EventBus.$off("toolbar-startBuffer", this.startBufferAnalysis);
+      EventBus.$off("toolbar-addTxtData", this.addTxtData);
+      EventBus.$off("toolbar-draw", this.drawLayer); //绘制点线面
+      EventBus.$off("query-poi", this.showPoi); //查询的兴趣点
+      EventBus.$off("query-seleted", this.showOne); //选中某点
+      EventBus.$off("query-inmarker", this.inMarker);
+      EventBus.$off("query-outmarker", this.outMarker);
+      EventBus.$off("toolbar-multiscreen", this.setMultiCfg);
+      EventBus.$off("openHeatAnalysis", this.heatAnalysis); // 热力图分析
+      EventBus.$off("clearHeatMap", this.clearHeatMap); // 清除热力图
+      EventBus.$off("clear-queryData", this.clearQueryData); // 清除绘制查询的缓存数据
+      EventBus.$off("clear-highQueryLayer", this.clearHighQueryLayer); // 清除高级查询弹出层
+      EventBus.$off('query-mark', this.genaGeoLayer);  // 高级查询显示点位图标标志
+      EventBus.$off('buffer-analysis', this.bufferAnalysis);  // 缓冲区分析
+      EventBus.$off('clear-buffer', this.clearBuffer);  // 缓冲区分析
+    },
+    async onSideBarCheck(node, checked, indeterminate) {
+      let self = this;
+      let proj = this.currentBaseMap.projection;
+      if (checked) {
+        const { data } = await apiServiceCatalogServiceByID(node.resID);
+        if (data.resultInfo.data.length > 0) {
+          let resource = data.resultInfo.data;
+          let originRes = [];
+          for (let resou of resource) {
+            originRes = originRes.concat(resou.serviceInfos);
+          }
+          let ser = sortServiceInfos(originRes, serType);
+          if (ser.length > 0) {
+            let userKey = this.userInfo
+              ? this.userInfo.userkey
+              : "886e60bb7e014f22a707de23e6f6505d";
+            let sermeta = serviceMgr
+              .getMetadata(ser[0].id, userKey)
+              .then(res => {
+                console.log(res)
+                res[0].resID = node.resID;
+                res[0].visible = true;
+
+                //平面坐标系在不同情况的EPSG有可能会正常表达亦经常为EPSG:-1000/0 在两者都是平面的情况不做坐标系判断，
+                //当存在两种不同平面坐标系的情况会有误差
+                let dontCheckPlanar = false;
+                if (!CrsMap[res[0].project] && !CrsMap[proj]) {
+                  dontCheckPlanar = true;
+                }
+
+                if (
+                  dontCheckPlanar ||
+                  (res[0].project == proj ||
+                    ((proj == "EPSG:4490" || proj == "EPSG:4326") &&
+                      (res[0].project == "EPSG:4490" ||
+                        res[0].project == "EPSG:4326")))
+                ) {
+                  self.addLayer(res[0]);
+                } else {
+                  self.$message.warning(
+                    "当前叠加的图层投影与底图不同，无法叠加！"
+                  );
+                }
+              });
+          } else {
+            this.$message.warning("无可叠加服务！");
+          }
+        }
+      } else {
+        for (let i = 0; i < this.specialLayers.length; i++) {
+          if (node.resID == this.specialLayers[i].resID) {
+            self.removeLayer(this.specialLayers[i]);
+          }
+        }
+      }
+    },
+    setMapLevel(e) {
+      let level = this.$refs.map.leaflet.getZoom();
+      let latlng = this.$refs.map.leaflet.getCenter();
+      let map = this.baseMapLayersGroup[0];
+      let para = JSON.parse(JSON.stringify(map));
+      delete para.verLayers;
+      delete para.type;
+      para.initLevel = level;
+      para.centerX = latlng.lng;
+      para.centerY = latlng.lat;
+      updateMap(para).then(data => {
+        if (data.data.resultInfo.success) {
+          this.$message.success("设置成功");
+        }
+      });
+    },
+    initUserInfo() {
+      return new Promise(async (resolve, reject) => {
+        const { data } = await apiGetUserInfo();
+        if (typeof data === "object") {
+          this.addUser(data.resultInfo.data);
+        }
+        resolve(data.resultInfo.data);
+      });
+    },
+    changeMapVersion(index) {
+      let currentMap = this.currentBaseMap;
+      this.initMapConfig(currentMap, index, true);
+    },
+    initMapConfig(currentMap, index, fadeFlag) {
+      this.baseMapLayers = [];
+      let mapOptions = {
+        center: [currentMap.centerY, currentMap.centerX],
+        zoom: currentMap.initLevel || 0,
+        maxBounds: L.latLngBounds(
+          L.latLng(currentMap.bbox[1], currentMap.bbox[0]),
+          L.latLng(currentMap.bbox[3], currentMap.bbox[2])
+        ),
+        preferCanvas: true
+      };
+
+      let crsOptions = {
+        origin: L.point(currentMap.bbox[0], currentMap.bbox[3]), //平面坐标系的origin只支持L.point类型 不支持数组
+        bounds: L.bounds(
+          [currentMap.bbox[0], currentMap.bbox[1]],
+          [currentMap.bbox[2], currentMap.bbox[3]]
+        )
+      };
+
+      let scalesLayers = currentMap.verLayers[index].layer.filter(item => {
+        return item.scale && item.scale.length;
+      });
+
+      if (scalesLayers && scalesLayers.length) {
+        crsOptions.scales = scalesLayers[0].scale;
+        mapOptions.maxZoom = scalesLayers[0].scale.length - 1;
+      }
+
+      let resLayers = currentMap.verLayers[index].layer.filter(item => {
+        return item.resolution && item.resolution.length;
+      });
+
+      if (resLayers && resLayers.length) {
+        crsOptions.resolutions = resLayers[0].resolution;
+        //分辨率与比例尺不能共存
+        if (crsOptions.scales) {
+          delete crsOptions.scales;
+        }
+        mapOptions.maxZoom = resLayers[0].resolution.length - 1;
+      }
+
+      if (CrsMap[currentMap.projection]) {
+        let projCode =
+          currentMap.projection == "EPSG:4490"
+            ? "EPSG:4326"
+            : currentMap.projection;
+        //只有比例尺 无分辨率的情况下
+        if (
+          crsOptions.scales &&
+          (!crsOptions.resolutions || !crsOptions.resolutions.length)
+        ) {
+          //比例尺分母数组
+          crsOptions.scaleDenominators = crsOptions.scales;
+          delete crsOptions.scales;
+          // 国家天地图EPSG:4490编码无分辨率，只有比例尺分母，且通过比例尺计算出的分辨率有误
+          if (currentMap.projection == "EPSG:4490" && !crsOptions.resolutions) {
+            crsOptions.resolutions = APPCONFIG.TDTCONFIG.WGS84;
+            //国家天地图坐标系设置scaleDenominators会导致resolution失效
+            delete crsOptions.scaleDenominators;
+          } else if (
+            currentMap.projection == "EPSG:900913" &&
+            !crsOptions.resolutions
+          ) {
+            crsOptions.resolutions = APPCONFIG.TDTCONFIG.Mercator;
+            //国家天地图坐标系设置scaleDenominators会导致resolution失效
+            delete crsOptions.scaleDenominators;
+          }
+        }
+        mapOptions.crs = L.Proj.CRS(projCode, crsOptions);
+      } else {
+        mapOptions.crs = L.CRS.NonEarthCRS(crsOptions);
+      }
+
+      mapOptions.contextmenu = true;
+      (mapOptions.contextmenuWidth = 120),
+        (mapOptions.contextmenuItems = [
+          {
+            text: "设置地图显示范围",
+            callback: this.setMapLevel
+          }
+        ]);
+
+      //判断坐标系是否一致，只有坐标系不一致的情况才切换坐标系重设中心点， 判断经依据crs的Bounds跟origin、resolutions， 不判断scales(dpi不同导致)
+      let needChangeMapCrs = true;
+      if (this.$refs && this.$refs.map) {
+        let map = this.$refs.map.leaflet,
+          oldCrsOptions = map.options.crs.options; //自定义坐标系
+        if (
+          oldCrsOptions &&
+          L.point(oldCrsOptions.origin).equals(crsOptions.origin) &&
+          oldCrsOptions.bounds
+            .getTopLeft()
+            .equals(crsOptions.bounds.getTopLeft()) &&
+          oldCrsOptions.bounds
+            .getBottomRight()
+            .equals(crsOptions.bounds.getBottomRight()) &&
+          oldCrsOptions.resolutions == crsOptions.resolutions
+        ) {
+          needChangeMapCrs = false;
+        }
+      }
+
+      if (needChangeMapCrs) {
+        //投影变换移除全部专题图
+        this.removeAllSLayer();
+        this.mapOptions = mapOptions;
+      }
+
+      let that = this;
+      this.baseMapLayers = currentMap.verLayers[index].layer.map(item => {
+        let userKey = that.userInfo
+          ? that.userInfo.userkey
+          : "886e60bb7e014f22a707de23e6f6505d";
+        let url =
+          item.layerUrl.indexOf("proxy") > -1
+            ? item.layerUrl + "/" + userKey
+            : item.layerUrl;
+        switch (item.layerType) {
+          case "WMTS":
+            item = JSON.parse(JSON.stringify(item));
+            let identifier = item.identifier,
+              matrixIds = [],
+              layerOptions = {
+                layerType: "WMTS",
+                url: url,
+                key: item.pkid,
+                options: {
+                  layer: item.name,
+                  tilematrixSet: item.matrixSet,
+                  style: "default",
+                  format: item.format,
+                  identifier: item.identifier,
+                  isFade: fadeFlag
+                }
+              };
+            if (item.resolution && item.resolution.length) {
+              layerOptions.options.resolutions = item.resolution;
+            }
+            if (identifier && identifier.length) {
+              identifier.forEach(ident => {
+                matrixIds.push({
+                  identifier: Number(ident)
+                });
+              });
+              layerOptions.options.matrixIds = matrixIds;
+            }
+            return layerOptions;
+          case "SMRESTMAP":
+            return {
+              layerType: "SMRESTMAP",
+              url: url,
+              key: item.pkid,
+              options: {
+                transparent: false,
+                isFade: fadeFlag
+              }
+            };
+        }
+      });
+    },
+    measure(type) {
+      if (this.maptype == "2d") {
+        this.$refs.draw.offEvent();
+        this.$refs.map.measure(type, this.$refs.draw.initEvent);
+      }
+    },
+    fullWidth() {
+      this.$refs.map.leaflet.setView(
+        L.latLng(this.currentBaseMap.centerY, this.currentBaseMap.centerX),
+        this.currentBaseMap.initLevel
+      );
+    },
+    fullScreen() {
+      FullScreen.FullScreen.toggleFullScreen(
+        document.getElementsByClassName("clearfix map-container")[0]
+      );
+    },
+    clearAll() {
+      this.$refs.map.clearMeasure();
+      this.$refs.draw.clearDrawLayer();
+      if (queryLayer) {
+        queryLayer.clearLayers();
+      }
+      this.geojsonData = {};
+      this.$refs.map.leaflet.closePopup();
+      this.changeGeoJsonDataFlag(false);
+      this.clearBufferAnalysis();
+      this.clearDrawLayer();
+      this.changListShow(false);
+      this.removeDistrictLayer();
+      this.changeMarkerQueryList(false);
+      this.removeGraphics();
+      this.changeAnlysisShow(false);
+    },
+    // why 移除marker点和列表
+    removeGraphicsAll() {
+      this.changeMarkerQueryList(false);
+      this.removeGraphics();
+      this.$refs.map.leaflet.closePopup();
+      let leafletLayers = this.$refs.map.leaflet._layers;
+      // why 清除地图上的graphic数组及图标重绘
+      for (let graLayer in leafletLayers) {
+        if (
+          leafletLayers[graLayer].graphics != undefined ||
+          leafletLayers[graLayer].graphics != null
+        ) {
+          leafletLayers[graLayer].graphics = [];
+          leafletLayers[graLayer].redraw();
+        }
+      }
+      this.changeGraphics([])
+    },
+    queryByID(e) {
+      let id = e[0].SmID;
+      if (queryLayer) {
+        let tipName = this.tipTemplateName;
+        if (!tipName) {
+          queryLayer.eachLayer(layer => {
+            if (layer.feature.properties.SmID == id) {
+              layer
+                .bindPopup(
+                  new Vue({
+                    render(h) {
+                      return (
+                        <FunctionalTable objData={layer.feature.properties} />
+                      );
+                    }
+                  }).$mount().$el,
+                  {
+                    minWidth: "400",
+                    keepInView:true
+                  }
+                )
+                .openPopup();
+
+              if (layer.setStyle) {
+                layer.setStyle({
+                  color: "red"
+                });
+              }
+              //平面fitBounds有bug
+              // this.$refs.map.leaflet.fitBounds(layer.getBounds(),{animate:true});
+            } else {
+              queryLayer.resetStyle(layer);
+            }
+          });
+        } else if (tipName === "SpecialTable") {
+          queryLayer.eachLayer(layer => {
+            if (layer.feature.properties.SmID == id) {
+              layer
+                .bindPopup(
+                  new Vue({
+                    render(h) {
+                      return (
+                        <SpecialTable objData={layer.feature.properties} />
+                      );
+                    }
+                  }).$mount().$el,
+                  {
+                    minWidth: "400",
+                    keepInView:true
+                  }
+                )
+                .openPopup();
+
+              if (layer.setStyle) {
+                layer.setStyle({
+                  color: "red"
+                });
+              }
+              //平面fitBounds有bug
+              // this.$refs.map.leaflet.fitBounds(layer.getBounds());
+            } else {
+              queryLayer.resetStyle(layer);
+            }
+          })
+        }
+        this.$refs.map.leaflet.panBy([1,1]);
+      }
+    },
+    showPoi(list) {
+      if (this.$refs.map) {
+        if (queryLayer) {
+          queryLayer.clearLayers();
+        }
+        queryLayer = L.featureGroup();
+        let pointBounds = [];
+        for (let i = 0; i < list.length; i++) {
+          let rowdata = list[i];
+          let x = rowdata.X;
+          let y = rowdata.Y;
+          pointBounds.push([y, x]);
+          let markerIcon = L.icon({
+            iconUrl: baseMarkerUrl + (i + 1) + ".png",
+            iconSize: [21, 31]
+          });
+          L.marker([y, x], {
+            icon: markerIcon,
+            id: i
+          })
+            .addTo(queryLayer)
+            .bindPopup(
+              "地名：" + rowdata.Name + "</br>坐标号:(" + x + "," + y + ")"
+            );
+        }
+        queryLayer.addTo(this.$refs.map.leaflet);
+        this.$refs.map.leaflet.fitBounds(pointBounds);
+      }
+    },
+    inMarker(index) {
+      let self = this;
+      if (queryLayer) {
+        queryLayer.eachLayer(function(layer) {
+          if (layer.options.id == index) {
+            layer._icon.attributes[0].nodeValue =
+              baseMarkerUrl + (index + 1) + "_h.png";
+          }
+        });
+      }
+    },
+    outMarker(index) {
+      let self = this;
+      if (queryLayer) {
+        queryLayer.eachLayer(function(layer) {
+          if (layer.options.id == index) {
+            layer._icon.attributes[0].nodeValue =
+              baseMarkerUrl + (index + 1) + ".png";
+          }
+        });
+      }
+    },
+    showOne(item) {
+      if (this.$refs.map) {
+        this.$refs.map.leaflet.setView(L.latLng(item.Y, item.X), 10);
+      }
+    },
+    drawClear() {
+      if (queryLayer) {
+        queryLayer.clearLayers();
+      }
+      this.geojsonData = {};
+      this.$refs.map.leaflet.closePopup();
+      this.changeGeoJsonDataFlag(false);
+    },
+    changeSelectFeature(tab) {
+      let data = this.resultList.filter(res => {
+        return tab == res.name;
+      });
+      if (data && data.length) {
+        this.genaGeoLayer(data[0].data);
+      }
+    },
+    async drawSearch(layer) {
+      this.resultList = [];
+      let self = this;
+      if (
+        !this.specialLayers ||
+        !this.specialLayers.filter(item => item.layerType == "SMRESTMAP").length
+      ) {
+        this.$message.error("当前未添加可查询专题图层，无法进行查询");
+        return;
+      }
+      this._loadingService = Loading.service({
+        target: this.$el,
+        background: "rgba(0, 0, 0, 0.8)",
+        text: "拼命加载中",
+        spinner: "el-icon-loading"
+      });
+      //穿透查询 分支
+      // if (layer._radius && layer._radius > 0) {
+        // console.log(layer)
+        // this.clearFM();
+        // let la = this.specialLayers;
+        // let featureOnMap = [];
+        // if (la && la.length) {
+        //   for (let itemLayer of la) {
+        //     let data = await serviceMgr.getAllRestResult(itemLayer, layer);
+        //     if (data.recordsets && data.recordsets.length) {
+        //       for (let i = 0; i < data.recordsets.length; i++) {
+        //         if (
+        //           data.recordsets[i].features &&
+        //           data.recordsets[i].features.features
+        //         ) {
+        //           this.resultList.push({
+        //             name: data.recordsets[i].datasetName,
+        //             data: data.recordsets[i].features
+        //           });
+        //         }
+        //       }
+        //       if (this.resultList && this.resultList.length) {
+        //         this.genaGeoLayer(this.resultList[0].data);
+        //       }
+        //     }
+        //   }
+        //   self._loadingService && self._loadingService.close();
+        //   self.changeGeoJsonDataFlag(true);
+        // } else {
+        //   self._loadingService && self._loadingService.close();
+        //   self.$message.warning("当前未添加专题图层，无法进行查询");
+        // }
+      // }else {
+        this.clearFM();
+        //普通空间查询， 查询第一个restmap
+        serviceMgr.getRestResult(layer,this.specialLayers,res => {
+            this._loadingService && this._loadingService.close();
+            if (res.recordsets && res.recordsets.length) {
+
+              for (let i = 0; i < res.recordsets.length; i++) {
+                if (
+                  res.recordsets[i].features &&
+                  res.recordsets[i].features.features
+                ) {
+                  this.resultList.push({
+                    name: res.recordsets[i].datasetName,
+                    data: res.recordsets[i].features
+                  });
+                }
+              }
+              if (this.resultList && this.resultList.length) {
+                this.genaGeoLayer(this.resultList[0].data);
+                self.changeGeoJsonDataFlag(true);
+              } else {
+                this.$message.warning("未查询到相关数据！");
+                this.changeGeoJsonDataFlag(false);
+                return;
+              }
+            }
+          },
+          function() {
+            this._loadingService && this._loadingService.close();
+            this.$message.warning("无可查询数据，请选择其它图层！");
+          },
+          function() {
+            this._loadingService && this._loadingService.close();
+            this.$message.warning("当前图层不是rest类型,无法获取数据！");
+          },
+          function() {
+            this._loadingService && this._loadingService.close();
+            this.$message.warning("当前未添加专题图层，无法进行查询");
+          }
+        );
+      // }
+    },
+
+
+    // why 去除与风貌影像开发有关的地图操作
+    clearFM() {
+      this.changeMarkerQueryList(false);
+      this.$refs.map.leaflet.closePopup();
+    },
+    addTxtData(data, type) {
+      let self = this;
+      let map = this.$refs.map.leaflet;
+      if (data) {
+        if (!map.hasLayer(drawLayerGroup)) {
+          map.addLayer(drawLayerGroup);
+          drawLayerGroup.on("click", e => {
+            e.layer.enableEdit();
+            self.changeCurrentActiveLayer(e.layer._leaflet_id);
+          });
+        }
+        let arr = data.split(",");
+        if (arr.length > 0) {
+          let a = [];
+          let pointsList = [];
+          for (let i = 0; i < arr.length; i++) {
+            let linearr = arr[i].split(" ");
+            if (!linearr[0]) {
+              linearr.shift();
+            }
+            if (linearr && linearr.length == 2) {
+              let b = [linearr[1], linearr[0]];
+              pointsList.push(b);
+            }
+          }
+          if (type == "polygon") {
+            //高亮
+            impGeo = L.polygon(pointsList).addTo(drawLayerGroup);
+            impGeo.setStyle({
+              color: "red"
+            });
+            // map.fitBounds(impGeo.getBounds());
+          } else if (type == "polyline") {
+            //高亮
+            impGeo = L.polyline(pointsList).addTo(drawLayerGroup);
+            // map.fitBounds(impGeo.getBounds());
+          }
+        }
+      }
+    },
+    removeImpFeatures() {
+      impGeo && impGeo.remove();
+    },
+    drawLayer(type) {
+      this.$refs.draw.offEvent();
+      let that = this;
+      let map = this.$refs.map.leaflet;
+      if (!map.hasLayer(drawLayerGroup)) {
+        drawLayerGroup.addTo(map);
+        drawLayerGroup.on("click", e => {
+          e.layer.enableEdit();
+          that.changeCurrentActiveLayer(e.layer._leaflet_id);
+        });
+      }
+
+      let drawOptions = {
+        icon: new L.DivIcon({
+          iconSize: new L.Point(16, 16),
+          className:
+            "leaflet-div-icon leaflet-editing-icon leaflet-edit-move leaflet-touch-icon"
+        })
+      };
+
+      if (type == "polyline") {
+        drawHandler = new L.Draw.Polyline(map, drawOptions);
+      } else if (type == "polygon") {
+        drawHandler = new L.Draw.Polygon(map, drawOptions);
+      } else if (type == "point") {
+        drawHandler = new L.Draw.Marker(map, drawOptions);
+      }
+      drawHandler.enable();
+      map.on(L.Draw.Event.CREATED, this.drawLayerCompelete);
+    },
+    drawLayerCompelete(e) {
+      let map = this.$refs.map.leaflet;
+      e.layer.addTo(drawLayerGroup);
+
+      this.changeCurrentActiveLayer(e.layer._leaflet_id);
+
+      drawHandler.disable();
+      map.off(L.Draw.Event.CREATED, this.drawLayerCompelete);
+      this.$refs.draw.initEvent();
+    },
+    onMapClick(e) {
+      if (e.layer) {
+        return;
+      }
+      if (drawLayerGroup && this.$refs.map.leaflet.hasLayer(drawLayerGroup)) {
+        drawLayerGroup.invoke("disableEdit");
+      }
+    },
+    async startBufferAnalysis(distance, type) {
+      let map = this.$refs.map.leaflet;
+      let layer = drawLayerGroup.getLayer(this.currentActiveLayerIndex);
+      let shape = convertLayerToBufferParams(layer);
+      distance = convertMeterToRealLength(distance, map.options.crs);
+      const { data } = await apiBufferService({
+        shape: shape,
+        leftDistance: distance,
+        rightDistance: distance
+      });
+      let bufferLayer = convertBufferToLayer(data.resultInfo.data);
+
+      bufferLayer.setStyle(activePathOptions);
+      //清除之前的bufferLayer
+      drawLayerGroup.eachLayer(layer => {
+        if (layer._isBuffer) {
+          layer.remove();
+        }
+      });
+      bufferLayer._isBuffer = true;
+      // this.changeCurrentActiveLayer(bufferLayer._leaflet_id);
+      drawLayerGroup.addLayer(bufferLayer);
+    },
+    clearBufferAnalysis() {
+      bufferResultGroup.clearLayers();
+      bufferResultGroup.remove();
+    },
+    clearDrawLayer() {
+      drawLayerGroup.clearLayers();
+      drawLayerGroup.remove();
+    },
+    startSlectQuery() {
+      let map = this.$refs.map.leaflet;
+      if (!map.hasLayer(drawLayerGroup)) {
+        this.$message.error("当前地图无可选择查询要素");
+        return;
+      }
+      drawLayerGroup.on("click", this.startSlectQueryComplete);
+    },
+    startSlectQueryComplete(e) {
+
+      if (!e.layer) {
+        return;
+      }
+      this.drawSearch(e.layer);
+      drawLayerGroup.off("click", this.startSlectQueryComplete);
+    },
+    districtChange(data) {
+
+      this.$refs.map.leaflet.setView(data.layer.getCenter(), 4);
+      //this.$refs.map.leaflet.fitBounds(data.layer.getBounds(),{animate:true});
+    },
+    districtToolTip(data) {
+      console.log('ch2')
+      data.layer.bindTooltip(this.acitveDis.name).openTooltip();
+      data.layer.setStyle({
+        weight: 5,
+        color: "orange",
+        dashArray: "",
+        fillOpacity: 0.7
+      });
+    },
+    districtOut(data) {
+      console.lgo('ch1')
+      data.layer.setStyle({
+        weight: 3,
+        color: "#3388ff",
+        dashArray: "",
+        fillOpacity: 0.3
+      });
+    },
+    setMultiCfg(index) {
+      let map = this.$refs.map.leaflet;
+      this.storeCurrentMapState({
+        center: map.getCenter(),
+        zoom: map.getZoom(),
+        crs: map.options.crs,
+        layers: this.specialLayers,
+        multi: index
+      });
+    },
+    genaGeoLayer(data) {
+      this.$refs.map.leaflet.closePopup();
+      if (queryLayer) {
+        queryLayer.clearLayers();
+      }
+      var baseballIcon = L.icon({
+        iconUrl: "./static/img/marker.png",
+        iconSize: [32, 35],
+        iconAnchor: [16, 34],
+        popupAnchor: [0, -28]
+      });
+      queryLayer = L.geoJSON(data, {
+        style: function() {
+          return {
+            color: "#00daff",
+            fillOpacity: 0.5
+          };
+        },
+        pointToLayer: function(feature, latlng) {
+          return L.marker(latlng, {
+            icon: baseballIcon
+          });
+        }
+      });
+      if (!this.tipTemplateName) {
+        //tipTemplateName为''走默认tip
+        queryLayer.bindPopup(
+          layer => {
+            return new Vue({
+              render(h) {
+                return <FunctionalTable objData={layer.feature.properties} />;
+              }
+            }).$mount().$el;
+          },
+          {
+            minWidth: "400",
+            keepInView:true
+          }
+        ); //
+      } else if (this.tipTemplateName === "SpecialTable") {
+        queryLayer.bindPopup(
+          layer => {
+            return new Vue({
+              render(h) {
+                return <SpecialTable objData={layer.feature.properties} />;
+              }
+            }).$mount().$el;
+          },
+          {
+            minWidth: "400",
+            keepInView: true
+          }
+        ); //
+      }
+      queryLayer.addTo(this.$refs.map.leaflet);
+      //this.$refs.map.leaflet.panBy([1,1]);
+    },
+    // why 原平台树状图执行图层叠加
+    async priOnSideBarCheck(node, checked, indeterminate) {
+      let self = this;
+      let proj = this.currentBaseMap.projection;
+      if (checked) {
+        const { data } = await apiServiceCatalogServiceByID(node.resourceId);
+        if (data.resultInfo.data.length > 0) {
+          let resource = data.resultInfo.data;
+          let originRes = [];
+          for (let resou of resource) {
+            originRes = originRes.concat(resou.serviceInfos);
+          }
+          let ser = sortServiceInfos(originRes, serType);
+          if (ser.length > 0) {
+            let userKey = this.userInfo
+              ? this.userInfo.userkey
+              : "886e60bb7e014f22a707de23e6f6505d";
+            let sermeta = serviceMgr
+              .getMetadata(ser[0].id, userKey)
+              .then(res => {
+                res[0].resID = node.resourceId;
+                res[0].visible = true;
+                //平面坐标系在不同情况的EPSG有可能会正常表达亦经常为EPSG:-1000/0 在两者都是平面的情况不做坐标系判断，
+                //当存在两种不同平面坐标系的情况会有误差
+                let dontCheckPlanar = false;
+                if (!CrsMap[res[0].project] && !CrsMap[proj]) {
+                  dontCheckPlanar = true;
+                }
+
+                if (
+                  dontCheckPlanar ||
+                  (res[0].project == proj ||
+                    ((proj == "EPSG:4490" || proj == "EPSG:4326") &&
+                      (res[0].project == "EPSG:4490" ||
+                        res[0].project == "EPSG:4326")))
+                ) {
+                  self.addLayer(res[0]);
+                  // why 风貌影像查询
+                  if (res[0].name == FMLayerName) {
+                    this.QueryRestBySql(res[0].url);
+                  }
+                } else {
+                  self.$message.warning(
+                    "当前叠加的图层投影与底图不同，无法叠加！"
+                  );
+                }
+              });
+          } else {
+            this.$message.warning("无可叠加服务！");
+          }
+        }
+      } else {
+        for (let i = 0; i < this.specialLayers.length; i++) {
+          if (node.resourceId == this.specialLayers[i].resID) {
+            if (this.specialLayers[i].name == FMLayerName) {
+              this.removeGraphicsAll();
+            }
+            self.removeLayer(this.specialLayers[i]);
+          }
+        }
+      }
+    },
+    // why sql查询出风貌影像属性数据
+    QueryRestBySql(url) {
+      let sql = " SMID>0 ";
+      this.paramSql = sql;
+      this.params.sql = sql;
+      this.params.url = "/webframe/biz/httpproxy/httpproxy.jsp?url=" + url;
+      console.log(this.params.url)
+      this.getData(geoJson => {
+        let graphicData = this.renderGraphicMarker(geoJson);
+        let maplevel = this.$refs.map.leaflet._zoom;// 获取地图当前level
+        this.graphicData = graphicData;
+        this.mapLevelRender(maplevel);// 初始化加载marker
+        this.$emit("handleBaseMap", this.$refs.map.leaflet);
+      });
+    },
+    // why 根据sql的params属性查询数据
+    getData(callback) {
+      let self = this;
+      this.geojsonData = {};
+      this.changeGraphics([]);
+      this.removeAllMarkLayer();
+      serviceMgr.getRestBySql(this.params).then(listdata => {
+        if (
+          listdata.recordsets[0].features.features &&
+          listdata.recordsets[0].features.features.length
+        ) {
+          let geoJson = listdata.recordsets[0];
+          callback(geoJson);
+        }
+      });
+    },
+    //why 根据地图初始化当前显示等级，渲染图层
+    mapLevelRender(level) {
+      this.mapZoomListen(level)
+    },
+    //why 监听地图当前显示等级，渲染图层
+    mapZoomListen(level) {
+      this.$refs.map.leaflet.closePopup()
+      this.removeGraphics()
+      let le = null
+      let selfData = []
+      let data = []
+
+      // 如果图层不存在 清除之前的渲染结果
+      if(this.specialLayers.length > 0) {
+        for(var i = 0; i < this.specialLayers.length; i++){
+          if(this.specialLayers[i].name == FMLayerName) {
+            continue
+          }else {
+            this.changeGraphics([])
+            return
+          }
+        }
+      }else {
+        this.changeGraphics([])
+        return
+      }
+
+      if(level instanceof Object) {
+        le = level.target._zoom
+      }else {
+        le = level
+      }
+
+      if(this.graphicData.length > 0) {
+        selfData = this.graphicData
+        data = []
+        if(le <= 1) {// 1级以下只绘制国家级
+          for(var i = 0; i < selfData.length; i++) {
+            if(selfData[i].properties.级别 == '国家级') {
+              data.push(selfData[i])
+            }
+          }
+          this.changeGraphics(data)
+        }else if(le <= 4) {// 4级以下绘制国家级、市级
+          for(var i = 0; i < selfData.length; i++) {
+            if(selfData[i].properties.级别 == '国家级' || selfData[i].properties.级别 == '市级') {
+              data.push(selfData[i])
+            }
+          }
+          this.changeGraphics(data)
+        }else {// 4级以上绘制所有数据
+          this.changeGraphics(this.graphicData)
+        }
+      }else {}
+    },
+    // why 解析数据 增加marker
+    renderGraphicMarker(gdata) {
+      let geoJson = gdata.features;
+      let icon;
+      let gra = [];
+      for (let data of geoJson.features) {
+        for (var i = 0; i < baseMarkerUrl.length; i++) {
+          if (data.properties.级别 == baseMarkerUrl[i].typevalue) {
+            icon = baseMarkerUrl[i].src;
+          }
+        }
+
+        let pro = geoJson.features.filter(geo => {
+          return (
+            (geo.properties.SMID || geo.properties.SmID) ==
+            (data.properties.SMID || data.properties.SmID)
+          );
+        });
+        let imageStyles = [];
+        //创建图片的样式
+        let img = new Image();
+        img.src = icon;
+        img.height = 32;
+        img.width = 32;
+        imageStyles.push(
+          L.supermap.imageStyle({
+            img: img,
+            anchor: [12, 14]
+          })
+        );
+        let latlng = L.latLng(
+          data.properties.SMY || data.properties.SmY,
+          data.properties.SMX || data.properties.SmX
+        );
+        let graphic = L.supermap.graphic({
+          latLng: latlng,
+          style: imageStyles[0].getStyle()
+        });
+        graphic.properties = pro[0].properties;
+        gra.push(graphic);
+      }
+      return gra;
+    },
+    // why 点击marker得到对应的参数
+    graphClick(item) {
+      this.graphPopup(item.properties, item._latLng);
+      this.graphTable(item.properties);
+      this.getMediaInfo(item);
+      this.clearMap();
+    },
+    // why 清除所有与风貌影像开发无关的地图操作
+    clearMap() {
+      this.$refs.map.clearMeasure();
+      this.$refs.draw.clearDrawLayer();
+      if (queryLayer) {
+        queryLayer.clearLayers();
+      }
+      this.geojsonData = {};
+      // this.$refs.map.leaflet.closePopup();
+      this.changeGeoJsonDataFlag(false);
+      this.clearBufferAnalysis();
+      this.clearDrawLayer();
+      this.changListShow(false);
+      this.removeDistrictLayer();
+    },
+    // why 取出数据，气泡显示名称
+    graphPopup(item, center) {
+      let name = item.名称;
+      let map = this.$refs.map.leaflet;
+      popup = null;
+      //景点名称的弹出框
+      popup = L.popup()
+        .setLatLng(center)
+        .setContent(
+  "<span style='font-weight: bold;height: 40px;line-height: 40px;padding:15px 30px;font-size: 14px;'>" + name +"</span>"
+        )
+        .openOn(map);
+    },
+    // why 传值 开表
+    graphTable(item) {
+      let data = [
+        {
+          level: "",
+          name: "",
+          address: "",
+          introduction: "",
+          id: "",
+          code: ""
+        }
+      ];
+      data[0].level = item.级别;
+      data[0].name = item.名称;
+      data[0].address = item.地址 != "" ? item.地址 : "暂无地址";
+      data[0].introduction = item.简介 != "" ? item.简介 : "暂无简介";
+      data[0].id = item.ID;
+      data[0].code = item.编码;
+      this.QueryMarkerObj = data;
+    },
+    // why 请求数据
+    getMediaInfo(item) {
+      let code = item.properties.编码;
+      axios.get(FMAxiosUrl + code + ".json").then(this.getHomeInfoSucc);
+    },
+    getHomeInfoSucc(res) {
+      if (res.data.resultInfo.data == null) {
+        this.$message.error(res.data.resultInfo.message)
+      }
+      let data = res.data.resultInfo.data;
+      if (data != null && data.length > 0) {
+        this.MediaInfo = [];
+        for (var i = 0; i < data.length; i++) {
+          this.MediaInfo[i] = data[i];
+        }
+      } else {
+        this.MediaInfo = [];
+        let nullData = [
+          {
+            id: "null",
+            fId: "null",
+            startDate: "暂无",
+            aList: [
+              {
+                dcid: "null",
+                desc: "null",
+                name: "null",
+                format: "null"
+              }
+            ]
+          }
+        ];
+        this.MediaInfo[0] = nullData[0];
+      }
+      this.changeMarkerQueryList(true);
+    },
+    heatAnalysis(heatMapData) {  // 开启热力图分析
+      this.analysisMap = this.$refs.map.leaflet;
+      if (this.resultLayer) {
+        this.analysisMap.removeLayer(this.resultLayer);
+        this.resultLayer = null;
+      }
+      var lats = [];
+      var lngs = [];
+      for(var i = 0; i < heatMapData.coords.length; i++){
+        lats.push(heatMapData.coords[i].lat);
+        lngs.push(heatMapData.coords[i].lng);
+      }
+      var heatNumbers = heatMapData.coords.length, heatRadius = heatMapData.params.radius, colorParams = heatMapData.params.colorValue;
+      var num = parseInt(heatNumbers);
+      num = (num > 0) ? num : 0;
+      var radius = parseInt(heatRadius);
+      radius = (radius > 0) ? radius : 0;
+      var heatPoints = [];
+      for (var i = 0; i < num; i++) {
+          heatPoints[i] = [lats[i], lngs[i], 0.5];
+      }
+      this.resultLayer = L.heatLayer(heatPoints, {
+          radius: radius,
+          minOpacity: 0.5,
+          gradient: {0.4: colorParams[0], 0.89: colorParams[1], 0.7: colorParams[2]}
+      }).addTo(this.analysisMap);
+    },
+    bufferAnalysis(bufferParams) {  // 缓冲区分析
+      var self = this;
+      this._loadingService = Loading.service({
+        target: this.$el,
+        background: "rgba(0, 0, 0, 0.8)",
+        text: "拼命加载中",
+        spinner: "el-icon-loading"
+      });
+      this.analysisMap = this.$refs.map.leaflet;
+      var dsBufferAnalystService, dsBufferAnalystParameters,
+      serviceUrl = '/webframe/biz/httpproxy/httpproxy.jsp?url=http://192.168.105.122:8090/iserver/services/spatialAnalysis-SGS/restjsr/spatialanalyst';
+        dsBufferAnalystService = L.supermap.spatialAnalystService(serviceUrl);
+        dsBufferAnalystParameters = new SuperMap.DatasetBufferAnalystParameters({
+            dataset: bufferParams.datasetName,
+            // filterQueryParameter: new SuperMap.FilterParameter({
+            //     attributeFilter: "NAME='团结路'"
+            // }),
+            bufferSetting: new SuperMap.BufferSetting({
+                endType: SuperMap.BufferEndType.ROUND,
+                leftDistance: {value: bufferParams.radius},
+                rightDistance: {value: bufferParams.radius},
+                semicircleLineSegment: 10
+            })
+        });
+        dsBufferAnalystService.bufferAnalysis(dsBufferAnalystParameters, function (serviceResult) {
+          var result = serviceResult.result;
+          if (result.succeed) {
+            self._loadingService.close();
+            self.resultLayer = L.geoJSON(result.recordset.features, {color: "red"}).addTo(self.analysisMap);
+          } else {
+            self._loadingService.close();
+          }
+        });
+    },
+    clearQueryData() {
+      this.resultList = [];
+    },
+    clearHighQueryLayer() {
+      this.drawClear();
+      this.clearQueryData();
+    },
+    clearHeatMap() {  // 清除热力图
+      if (this.resultLayer) {
+        this.analysisMap.removeLayer(this.resultLayer);
+        this.resultLayer = null;
+      }
+    },
+    clearBuffer() {   // 清除缓冲区分析
+      this.clearBufferAnalysis();
+      this.clearDrawLayer();
+      if (this.resultLayer) { // 清除整个图层缓冲区分析
+        this.analysisMap.removeLayer(this.resultLayer);
+      }
+    }
+  }
+};
+</script>
+
+<style  lang="scss" scoped>
+.leaflet-touch .leaflet-draw-toolbar .leaflet-draw-draw-circle{
+    background:url('./../../../static/img/around.png') no-repeat!important;
+    background-position:0 0!important;
+}
+.leaflet-map {
+  width: 100%;
+  height: 100%;
+  background-color: #fff !important;
+}
+.result-table {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 999;
+  .el-table__empty-block {
+    //min-height: 200px !important;
+  }
+  .el-table {
+    // height:200px;
+  }
+  .el-table__body-wrapper {
+    // height:165px
+  }
+}
+.result-table .el-table .cell {
+  white-space: nowrap !important;
+  overflow: hidden;
+  word-break: keep-all;
+}
+.result-table .el-table .el-table__body-wrapper {
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+
+
+</style>

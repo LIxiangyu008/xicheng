@@ -1,0 +1,99 @@
+<template lang="html">
+  <el-container class="monitor">
+    <el-aside class="monitor-tool">
+      <monitor-tool @monitorType="changeType"  @showMiddlePanel="changeMiddlePanel"></monitor-tool>
+    </el-aside>
+    <el-main class="monitor-main" v-if="monitorType=='白塔寺监测点'">
+      <baitasi-map></baitasi-map>
+      <quota-statistic></quota-statistic>
+      <baitashi-analysis></baitashi-analysis>
+    </el-main>
+    <el-main class="monitor-main" v-else>
+      <div v-if="middlePanel">
+         <el-header class="mian-header" height="">
+          <monitor-header></monitor-header>
+        </el-header>
+        <el-container class="main-container">
+          <el-aside class="chart-left" width="25%">
+            <monitor-left></monitor-left>
+          </el-aside>
+          <el-main class="middle-map">
+            <monitor-middle></monitor-middle>
+          </el-main>
+          <el-aside class="chart-right" width="25%">
+            <monitor-right></monitor-right>
+          </el-aside>
+        </el-container>
+      </div>
+      <div v-else style="height: 100%;width: 100%;">
+        <signal-analysis-middle></signal-analysis-middle>
+      </div>
+    </el-main>
+  </el-container>
+</template>
+
+<script>
+import MonitorTool from "./components/Tool";
+import MonitorHeader from "./components/Header";
+import MonitorLeft from "./components/Left";
+import MonitorRight from "./components/Right";
+import MonitorMiddle from "./components/Middle";
+import BaitasiMap from "./components/BaitasiMap";
+import QuotaStatistic from "./components/children/QuotaStatistic"
+import SignalAnalysisMiddle from "./components/SignalAnalysisMiddle"
+import BaitashiAnalysis from "./components/children/BaitashiAnalysis";
+export default {
+  name: "Monitor",
+  components: {
+    MonitorTool,
+    MonitorHeader,
+    MonitorLeft,
+    MonitorRight,
+    MonitorMiddle,
+    BaitasiMap,
+    QuotaStatistic,
+    SignalAnalysisMiddle,
+    BaitashiAnalysis,
+  },
+  data() {
+    return {
+      monitorType: "白塔寺监测点",
+      middlePanel:true
+    };
+  },
+  methods: {
+    changeType(type){
+      this.monitorType = type;
+      this.middlePanel = true;
+    },
+    changeMiddlePanel(type){
+      this.middlePanel = type;
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.monitor {
+  height: 100%;
+  .monitor-tool {
+    overflow-x: hidden;
+  }
+  .monitor-main {
+    overflow: hidden;
+    margin: 5px;
+    .mian-header {
+      margin-bottom: 10px;
+    }
+    .main-container {
+      height: 100%;
+      .chart-left {
+        margin-right: 5px;
+      }
+      .chart-right {
+        margin-left: 5px;
+      }
+    }
+  }
+}
+</style>

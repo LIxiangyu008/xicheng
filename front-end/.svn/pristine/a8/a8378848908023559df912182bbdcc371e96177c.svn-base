@@ -1,0 +1,40 @@
+<script>
+  const publicPrefix = 'l-';
+
+  export default {
+    created() {
+      // console.log(this, this._props);
+    },
+    methods: {
+      //can be overrided
+      _initHooks(parent) {
+        this.leaflet.addTo(parent)
+        EventBus.$emit("queryC",parent);
+      },
+      addEventHook(l, events) {
+        events.forEach((event, index) => {
+          let eventName = `${publicPrefix}${event}`;
+          l.on(event, (e) => {
+            this.$emit(eventName, e);
+          })
+        })
+      },
+      mixinPropOption(props, propsOption) {
+        
+        let options = Object.assign({}, props['options'] || {})
+        let keys = Object.keys(props);
+        for (let i = keys.length - 1; i >= 0; i--) {
+          let key = keys[i];
+          const mixin = propsOption[key] && key !== 'options' && props[key] && !propsOption[key]['except'];
+          if (mixin) {
+            options[key] = props[key];
+          }
+        }
+        return options;
+      },
+      trigger(e) {
+        this.$emit(`${publicPrefix}${event}`, e);
+      }
+    }
+  }
+</script>

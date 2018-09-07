@@ -1,0 +1,164 @@
+<template>
+    <el-container class="wrapper">
+        <el-header class="header" height="80px" id="header"  >
+          <span class="logo-span">
+             <img src="static/img/logo.png" style="vertical-align: middle;" alt="logo">
+          </span>
+          <span class="name-span">{{ title }}</span>
+          <!-- <el-menu :default-active="activeIndex_1" class="header-menu" mode="horizontal" v-if="modules">
+            <el-menu-item index="home"><a :href='host+modules[0].href' target="_blank">{{modules[0].name}}</a></el-menu-item>
+            <el-menu-item index="map"><a :href='host+modules[1].href' target="_blank">{{modules[1].name}}</a></el-menu-item>
+            <el-menu-item index="devcenter"><a :href='host+modules[2].href' target="_blank">{{modules[2].name}}</a></el-menu-item>
+            <el-menu-item index="sysmanage"><a :href='host+modules[3].href' target="_blank">{{modules[3].name}}</a></el-menu-item>
+          </el-menu> -->
+          <template v-if="userInfo">
+            <div class="user-detail"><span class="first"><i class="fa fa-user-circle"></i></span><span>欢迎你，{{userInfo.usershortname}}</span></div>
+          </template>
+          <template v-else>
+            <div class="user-detail">登录</div>
+          </template>
+        </el-header>
+        <el-container>
+            <el-aside class="aside" width="94px" id="aside">
+                <el-menu
+                    class="menu"
+                    :default-active="activeIndex"
+                    :router="true">
+                    <div height="20px">
+                        &nbsp;
+                    </div>
+                    <el-menu-item index="map" @click="showlist">
+                        <i class="icon-query"></i>
+                        <p>资源目录</p>
+                    </el-menu-item>
+                    <!-- <el-menu-item index="sta">
+                        <i class="icon-statistic"></i>
+                        <p>统计分析</p>
+                    </el-menu-item>
+                    <el-menu-item index="sta">
+                        <i class="icon-design"></i>
+                        <p>我的收藏</p>
+                    </el-menu-item> -->
+<!--                     <el-menu-item index="multiScreen">
+                        <i class="icon-bigdata"></i>
+                        <p>分屏对比</p>
+                    </el-menu-item> -->
+                    <el-menu-item index="monitor">
+                        <i class="icon-design"></i>
+                        <p>实时监控</p>
+                    </el-menu-item>
+                    <el-menu-item index="mapManage">
+                      <i class="icon-edit"></i>
+                      <p>我的地图</p>
+                    </el-menu-item>
+                </el-menu>
+            </el-aside>
+            <el-main class="main">
+                <router-view></router-view>
+            </el-main>
+        </el-container>
+    </el-container>
+</template>
+
+<script>
+import {
+  mapState,
+  mapMutations
+} from 'vuex'
+import { apicurStyle } from '@/apis/api'
+import { Geoesbmengine } from '@/config/app-config'
+
+let host = APPCONFIG.IP;
+
+export default {
+    data() {
+        return {
+          user:{
+              usershortname:"暂无"
+          },
+          activeIndex: 'query',
+          activeIndex_1:'map',
+          host:host,
+          title: '',
+          imgSrc: Geoesbmengine.location + '/services/customstyle/img/logout/cas/logo'
+        }
+    },
+    async created() {
+      this.getCurStyle()
+      await this.$store.dispatch('getUserInfo')
+    },
+    computed: {
+      ...mapState({
+        userInfo: state => state.user.userInfo,
+        modules: state => state.user.modules
+      }),
+
+    },
+    mounted() {
+        this.getDefaultIndex();
+    },
+    watch: {
+        // '$route.name'(val) {
+        //    this.getDefaultIndex();
+        // }
+    },
+    methods: {
+      ...mapMutations([
+      'changeCurrentBaseMapIndex',
+      'changeMapMode',
+      'removeAllSLayer',
+      'changeShowMenu',
+      'changeQueryWin',
+      'addBaseMapLayersGroup',
+      'changeMarkerQueryList',
+      'removeGraphics',
+      'changeGraphics'
+    ]),
+      getDefaultIndex() {
+          this.activeIndex = this.$route.path == '/home' ? 'map' : this.$route.path.replace('\/', '');
+      },
+      showlist(){
+        this.changeShowMenu(true);
+        this.changeQueryWin(true)
+      },
+      getCurStyle() {
+        apicurStyle().then((res) => {
+          this.title = res.data.resultInfo.data.title;
+        })
+      }
+    }
+}
+</script>
+
+<style lang="scss" scoped>
+    .wrapper {
+        height: 100%;
+    }
+    .main {
+        padding: 0px !important;
+        // overflow: hidden;
+    }
+    .user-detail {
+        float: right;
+        height: 100%;
+        line-height: 80px;
+        width: 220px;
+        z-index: 99999;
+    }
+
+    .header-menu {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+
+
+      .el-menu-item {
+        height: 80px;
+        line-height: 80px;
+        font-size: 18px;
+        //padding: 0 40px;
+        color: #fff;
+      }
+    }
+</style>

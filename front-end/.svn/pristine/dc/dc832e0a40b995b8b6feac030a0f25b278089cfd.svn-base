@@ -1,0 +1,298 @@
+<template lang="html">
+  <div class="baitis-analysis" v-show="isShow">
+  	<div class="head">
+  		<div class="head-title">
+  			<span>xxx监测点检测点xx统计</span>
+  			<a class="close-button" @click="closePanel">×</a>
+  		</div>
+		<div  class="head-time">
+			<span>2018-05-12 15:30</span>
+		</div>
+  	</div>
+  	<div class="content">
+  		<div class="city-operation" style="height: 165px;" id="1">
+  			<div class="module-title">
+  				<span>城市运行</span>
+  			</div>
+  			<div class="quotas">
+  				<div class="quota-item">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(人次)</span><br>
+  					<span>人流量平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(车次)</span><br>
+  					<span>车流量平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(分贝)</span><br>
+  					<span>噪音平均值</span>
+  				</div>
+  			</div>
+  			<ul class="quotas-detail">
+  				<li class="top">
+  					<span class="fc">人流量最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li  class="top">
+  					<span class="fc">人流量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">车流量最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+
+  				<li>
+  					<span class="fc">车流量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  			</ul>
+  		</div>
+  		<div class="city-operation" style="height: 234px;" id="3">
+  			<div class="module-title">
+  				<span>舒适度</span>
+  			</div>
+  			<div class="quotas">
+  				<div class="quota-item">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(度)</span><br>
+  					<span>温度平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(kg/m3)</span><br>
+  					<span>湿度平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(米/秒)</span><br>
+  					<span>风速平均值</span>
+  				</div>
+  			</div>
+  			<ul class="quotas-detail">
+  				<li class="top">
+  					<span class="fc">温度最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li  class="top">
+  					<span class="fc">温度最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">湿度最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+
+  				<li>
+  					<span class="fc">湿度最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">紫外线最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">紫外线最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">气压最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+
+  				<li>
+  					<span class="fc">气压最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">光照最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">光照最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">风速最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">风速最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  			</ul>
+  		</div>
+  		<div class="city-operation"  id="2">
+  			<div class="module-title">
+  				<span>空气质量</span>
+  			</div>
+  			<div class="quotas">
+  				<div class="quota-item">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(人次)</span><br>
+  					<span>人流量平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(车次)</span><br>
+  					<span>车流量平均值</span>
+  				</div>
+  				<div class="quota-item mg">
+  					<span style="font-size: 20px;">25</span>
+  					<span>(分贝)</span><br>
+  					<span>噪音平均值</span>
+  				</div>
+  			</div>
+  			<ul class="quotas-detail">
+  				<li class="top">
+  					<span class="fc">人流量最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li  class="top">
+  					<span class="fc">人流量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">车流量最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+
+  				<li>
+  					<span class="fc">车流量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">车流量最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+
+  				<li>
+  					<span class="fc">车流量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音最低值：<span class="fg">xx</span>人次</span>
+  				</li>
+  				<li>
+  					<span class="fc">噪音量最高值：<span class="fr">xx</span>人次</span>
+  				</li>
+  			</ul>
+  		</div>
+  	</div>
+  </div>
+</template>
+<script>
+import { getSensorDataCollect } from "./../../../../apis/api"
+import { mapMutations, mapState } from "vuex";
+
+export default {
+  components: {},
+  data() {
+    return {
+        isShow:true,
+    }
+  },
+  computed: {
+    ...mapState({
+      deviceInfo: state => state.map.deviceInfo,
+      showStatPanel: state => state.map.showStatPanel
+    })
+  },
+  methods: {
+    ...mapMutations([
+      "changeSensorData",
+      "changeDeviceInfo"
+    ]),
+    closePanel(){
+      this.isShow = false;
+    }
+  }
+
+}
+
+</script>
+<style lang="scss" scoped>
+.baitis-analysis {
+	width: 356px;;
+	height: 680px;
+ 	border: 1px solid #409EFF;
+ 	background: #FFFFFF;
+	position: absolute;
+    bottom: 50px;
+    right: 10px;
+	z-index: 999;
+	font-size: 14px;
+	.head {
+		background: #5099EB;
+		height: 50px;
+		color: #FFFFFF;
+		.head-title {
+			line-height: 25px;
+    		margin-left: 5px;
+    		.close-button{
+    			position: absolute;
+			    top: 5px;
+			    right: 6px;
+			    font: 22px/18px Tahoma, Verdana, sans-serif;
+			    color: #FFFFFF;
+			    text-decoration: none;
+			    font-weight: bold;
+			    -webkit-transition: all .3s;
+			    transition: all .3s;
+			    cursor: pointer;
+			    &:hover{
+		            transform: rotate(360deg);
+		            -webkit-transform: rotate(360deg);
+		            -moz-transform: rotate(360deg);
+		            -o-transform: rotate(360deg);
+		            -ms-transform: rotate(360deg);
+			    }
+    		}
+		}
+		.head-time{
+			line-height: 25px;
+    		text-align: center;
+    		font-size: 10px;
+		}
+
+	}
+	.mg {
+		margin-left: 15px;
+	}
+	.top{
+		border-top: dashed 1px #6CCBE7;
+	}
+	.fc{
+		color: #5099EB;
+	}
+	.fg{
+		color: #66CD66;
+	}
+	.fr{
+		color: #FF3415
+	}
+	li{
+		width: 50%;
+	    float: left;
+	    border-bottom: dashed 1px #6CCBE7;
+	    line-height: 22px;
+	    font-size: 13px;
+	}
+	.content {
+	    padding: 8px;
+	    .city-operation {
+	    	.module-title{
+	    		font-size: 20px;
+			    color: #5099EB;
+    			padding-bottom: 10px;
+	    	}
+	    	.quotas {
+	    		height: 45px;
+	    		margin-bottom: 10px;
+	    		.quota-item {
+				    width: 100px;
+					padding: 2px;
+				    color: #66CD66;
+				    border: 1px solid;
+				    float: left;
+				    text-align: center;
+	    		}
+	    	}
+	    }
+	}
+}
+
+</style>

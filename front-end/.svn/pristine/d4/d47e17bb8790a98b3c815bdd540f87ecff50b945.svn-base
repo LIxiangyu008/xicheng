@@ -1,0 +1,223 @@
+<template lang="html">
+  <div class="analysisVisual">
+    <span class="moduleStyle">分析</span>
+    <div class="tool-select">按&nbsp;
+      <el-select style="width: 91%;" v-model="quota" placeholder="请选择展示指标" size="mini">
+        <el-option v-for="items in renderoptions" :key="items.value" :label="items.label" :value="items.value">
+        </el-option>
+      </el-select>
+    </div>
+    <div class="analysis">
+      <div>
+        <el-radio-group v-model="informtype" size="mini" fill="#5098EA">
+          <el-radio-button label="hour">时报</el-radio-button>
+          <el-radio-button label="day">日报</el-radio-button>
+          <el-radio-button label="week">周报</el-radio-button>
+          <el-radio-button label="month">月报</el-radio-button>
+          <el-radio-button label="year">年报</el-radio-button>
+        </el-radio-group>
+      </div>
+      <div class="indicator">
+        <el-date-picker style="width: 98%;" v-model="times" type="datetimerange" value-format="yyyy-MM-dd HH:mm:ss" @change="timeChange" size="mini" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
+        </el-date-picker>
+      </div>
+      <el-button class="btnStyle" @click="queryData">分析</el-button>
+    </div>
+  </div>
+</template>
+<script>
+import { getSensorDataCollect, getSensor } from "../../../../apis/api";
+export default {
+  data() {
+    return {
+      dataoptions: [{
+        value: '白塔寺监测点',
+        label: '白塔寺监测点'
+      }, {
+        value: '手机信令',
+        label: '手机信令'
+      }],
+      value1: '',
+      renderoptions: [{
+        value: 'NOISE',
+        label: '噪音'
+      }, {
+        value: 'LIGHT',
+        label: '光照'
+      }, {
+        value: 'TEMPERATURE',
+        label: '温度'
+      }, {
+        value: 'PRESSURE',
+        label: '气压'
+      }, {
+        value: 'HUMIDITY',
+        label: '湿度'
+      }, {
+        value: 'O3',
+        label: '臭氧'
+      }, {
+        value: 'HCHO',
+        label: '甲醛'
+      }, {
+        value: 'WINDSPEED',
+        label: '风速'
+      }, {
+        value: 'UV_紫外线',
+        label: '紫外线'
+      }, {
+        value: 'HUMANFLOW',
+        label: '人流量'
+      }, {
+        value: 'CARFLOW',
+        label: '车流量'
+      }, {
+        value: 'CO2',
+        label: '二氧化碳'
+      }, {
+        value: 'PM2P5',
+        label: '细颗粒物'
+      }, {
+        value: 'CO',
+        label: '一氧化碳'
+      }, {
+        value: 'SO2',
+        label: '二氧化硫'
+      }, {
+        value: 'NO2',
+        label: '二氧化氮'
+      }, {
+        value: 'PM10',
+        label: '可吸入颗粒物'
+      }, {
+        value: 'VOC',
+        label: '挥发性有机化合物'
+      }],
+      informtype: 'hour',
+      times: ["2017-12-15 00:00:00","2017-12-15 23:00:00"],
+      largetime:'2017-12-15 23:00:00',
+      smalltime:'2017-12-15 00:00:00',
+      quota:'',
+    }
+  },
+  methods: {
+    selectChange(value) {
+      console.log(value);
+    },
+    headStyle({ row, rowIndex }) {
+      return "height:30px";
+    },
+    timeChange(times) {
+      this.smalltime = times[0];
+      this.largetime = times[1];
+    },
+    async queryData(){
+      let params = this.initParams();
+      let data = await getSensorDataCollect(params);
+      let sensorData = await getSensor({ size: 10000 });
+      debugger
+    },
+    initParams() {
+      return {
+        "size": 0,
+        "query": {
+          "bool": {
+            "filter": [{
+                "range": {
+                  "time": {
+                    "format": "yyyy-MM-dd HH:mm:ss",
+                    "gte": this.smalltime,
+                    "lte": this.largetime
+                  }
+                }
+              },
+              {
+                "match": {
+                  "indName": this.quota
+                }
+              }
+            ]
+          }
+        },
+        "aggs": {
+          "ind": {
+            "terms": {
+              "field": "indName.keyword"
+            },
+            "aggs": {
+              "datetime": {
+                "date_histogram": {
+                  "field": "time",
+                  "interval": this.informtype,
+                  "format": "yyyy-MM-dd HH:mm:ss",
+                  "min_doc_count": 0,
+                  "extended_bounds": {
+                    "min": this.smalltime,
+                    "max": this.largetime
+                  }
+                },
+                "aggs": {
+                  "avg_value": {
+                    "avg": {
+                      "field": "indValue"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+    }
+  }
+}
+</script>
+<style lang="scss">
+.analysisVisual {
+  height: 100%;
+  font-size: 14px;
+  font-family: "微软雅黑";
+  .moduleStyle {
+    color: #999999;
+    font-size: 17px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .m2 {
+    margin-top: 45px
+  }
+  .tool-select {
+    padding: 10px 0px 10px 10px;
+  }
+  .el-input--suffix .el-input__inner {
+    padding-right: 60px;
+  }
+  .el-radio-button--mini .el-radio-button__inner {
+    padding: 7px 14px !important;
+    font-size: 12px;
+    border-radius: 0;
+  }
+  .indicator {
+    background-color: #5098EA;
+    line-height: 40px;
+    text-align: center;
+    margin: 10px 0 10px 0;
+    .el-date-editor .el-range-separator {
+      padding: 0 5px;
+      line-height: 20px !important;
+      width: 9% !important;
+      color: #303133;
+    }
+  }
+  .btnStyle {
+    color: #FFFFFF;
+    background-color: #5098EA;
+    width: 100%;
+    margin-left: 0px;
+  }
+  .m1 {
+    margin-top: 20px;
+  }
+}
+
+</style>

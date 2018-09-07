@@ -1,0 +1,255 @@
+<template>
+	<div class="LabelControl">
+		<div class="title">
+			<span @click="addLabel">添加标注</span>
+			<span @click="pkid === '' ? delShow = false : delShow = true">删除标注</span>
+		</div>
+		<div class="content">
+			<div v-for="(item, index) in labelMsg" :key="index" @click="getLabelInfo(item, index)" ref="currentLabel">
+				<i class="icon-location2" style="color: #62C7E4;"></i>
+				{{item.name}}
+			</div>
+		</div>
+		<div class="toast" v-show="addShow">
+			<div class="head">添加场景标注</div>
+			<div class="inputBox">
+				<input type="text" name="" placeholder="请输入场景名称" v-model="sceneName">
+			</div>
+			<div class="control">
+				<button @click="addShow = false">取消</button>
+				<button @click="confirmAdd">确认</button>
+			</div>
+		</div>
+		<div class="toast" v-show="delShow">
+			<div class="head">确认删除当前标注吗？</div>
+			<div class="inputBox">
+				{{labelName}}
+			</div>
+			<div class="control">
+				<button @click="delShow = false">取消</button>
+				<button @click="confirmDel(pkid)">确认</button>
+			</div>
+		</div>
+	</div>
+</template>
+<script type="text/javascript">
+import axios from 'axios';
+
+import {
+  getSceneLabel,
+  addSceneLabel,
+  delSceneLabel
+} from "../../../apis/api.js";
+	export default {
+		data() {
+			return {
+				sceneName: '',
+				addShow: false,
+				delShow: false,
+				coords: {},
+				labelMsg: [],
+				pkid: '',
+				labelName: ''
+			};
+		},
+		created() {
+			this.initData();
+		},
+		methods: {
+			initData() {  // 初始化数据
+				getSceneLabel().then((res) => {
+			        if (res.status === 200 && res.data.model.Boolean) {
+			        	this.labelMsg = res.data.model.msg;
+			        }
+			    }).catch((error) => {
+			    	console.log(error);
+			    })
+			},
+			addLabel() {  // 添加标注
+				this.addShow = true;
+				var CameraPosition = Viewer.scene.camera;
+				// 获取场景信息
+				var heading = CameraPosition.heading;
+				var pitch = CameraPosition.pitch;
+				var roll = CameraPosition.roll;
+				var position = CameraPosition.positionCartographic;
+				//弧度转经纬度
+				var longitude = Cesium.Math.toDegrees(position.longitude);
+				var latitude = Cesium.Math.toDegrees(position.latitude);
+				var height = position.height;
+				if (height < 0) {
+					height = 0;
+				}
+				this.coords = {
+					lon: longitude,
+					lat: latitude,
+					alt: height,
+					heading: heading,
+					pitch: pitch,
+					roll: roll
+				}
+			},
+			confirmAdd() {  // 确认添加标注
+				var remark = {
+	                layerid: "100",
+	                name: this.sceneName,
+	                style: "json",
+	                coords:JSON.stringify(this.coords)
+            	};
+            	addSceneLabel(remark).then((res) => {
+            		if (res.status === 200 && res.data.model.Boolean) {
+            			this.initData();
+            			this.addShow = false;
+            			this.success('add');
+            			this.sceneName = '';
+            		} else {
+            			this.addShow = false;
+            			this.failed('add');
+            		}
+            	}).catch((error) => {
+            			console.log(error);
+            			this.addShow = false;
+            			this.failed('add');
+            		})
+			},
+			getLabelInfo(item, index) { // 获取当前点击的label信息
+				for(var i = 0; i < this.$refs.currentLabel.length; i++){
+					this.$refs.currentLabel[i].style.border = '1px #eee solid';
+				}
+				this.$refs.currentLabel[index].style.border = '2px solid #62C7E4';
+				this.pkid = item.pkid;
+				this.labelName = item.name;
+				EventBus.$emit('scene-label', JSON.parse(this.labelMsg[index].coords)); // 场景标注切换
+			},
+			confirmDel(pkid) {  // 确认删除标注
+				var data = {
+					pkid: pkid
+				};
+				delSceneLabel(pkid).then((res) => {
+					if (res.status === 200 && res.data.model.Boolean) {
+						this.initData();
+						this.delShow = false;
+						this.success('del');
+						this.pkid = '';
+						for(var i = 0; i < this.$refs.currentLabel.length; i++){
+							this.$refs.currentLabel[i].style.border = '1px #eee solid';
+						}
+					} else {
+						this.delShow = false;
+						this.failed('del');
+					}
+				}).catch((error) => {
+					console.log(error);
+					this.delShow = false;
+					this.failed('del');
+				})
+			},
+			success(val) { // 操作成功提示
+				var msg = '';
+				if (val === 'add') {
+					msg = '恭喜您，添加成功';
+				} else if (val === 'del') {
+					msg = '恭喜您，删除成功';
+				}
+				this.$message({
+					message: msg,
+					type: 'success'
+				});
+			},
+			failed(val) { // 操作失败提示
+				var msg = '';
+				if (val === 'add') {
+					msg = '抱歉，添加失败';
+				} else if (val === 'del') {
+					msg = '抱歉，删除失败';
+				}
+				this.$message.error(msg);
+			}
+		}
+	}
+</script>
+
+<style scoped>
+.LabelControl {
+	position: absolute;
+    top: 20%;
+    left: 4.5%;
+    width: 300px;
+    background: #fff;
+    padding: 15px;
+}
+.LabelControl .title {
+	border-bottom: 1px #ccc solid;
+	padding-bottom: 10px;
+}
+.LabelControl .title span:hover {
+	color: #62C7E4;
+}
+.LabelControl .title {
+	cursor: pointer;
+}
+.LabelControl .content {
+	max-height: 360px;
+    overflow-y: scroll;
+    padding: 5px 5px 0 0;
+}
+.LabelControl .content div:hover {
+	border: 2px solid #62C7E4;
+}
+.LabelControl .content div {
+	line-height: 30px;
+    height: 30px;
+    border: 1px #eee solid;
+    margin-top: 5px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+.LabelControl .toast {
+	width: 250px;
+	height: 120px;
+	background: #fff;
+	position: absolute;
+    right: -100%;
+    top: 50%;
+    border-radius: 5px;
+}
+.LabelControl .toast .head {
+	height: 40px;
+	line-height: 40px;
+	border-bottom: 1px solid #ccc;
+	font-size: 14px;
+	padding: 0 10px;
+	box-sizing: border-box;
+	text-align: center;
+}
+.LabelControl .toast .inputBox {
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+}
+.LabelControl .toast .inputBox input {
+	height: 30px;
+    width: 80%;
+}
+.LabelControl .toast .control {
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+}
+.LabelControl .toast .control button {
+	width: 60px;
+    background: #eee;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    padding: 3px 0px;
+    border-radius: 2px;
+}
+.LabelControl .toast .control button:hover {
+	color: #62C7E4;
+	border-color: #62C7E4;
+	background-color: #fff;
+}
+.LabelControl .toast .control button:first-child {
+	margin-right: 20px;
+}
+</style>

@@ -1,0 +1,101 @@
+/* 全局样式 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "PingFangSC-Regular", "微软雅黑", "Arial", "Microsoft YaHei","黑体","宋体",sans-serif;
+}
+
+.clearfix {
+  zoom: 1;
+
+  &:after {
+    content: " ";
+    display: block;
+    clear: both;
+    height: 0;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.leaflet-popup-content {
+  margin: -2px !important;
+  border-radius: 5px;
+}
+
+.leaflet-mouse-marker {
+  cursor: crosshair !important;
+}
+
+.l-map.leaflet-container {
+  background: #fff;
+}
+
+.iclient-leaflet-logo, .leaflet-control-attribution {
+  display: none !important;
+}
+
+.box-panel {
+  background: #FFF;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 2px 6px 0 rgba(0,0,0,.2), 0 2px 6px 0 rgba(0,0,0,.19);
+
+  .close-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all .2s;
+
+    &:hover {
+      transform: rotate(180deg);
+      color: #28519e;
+    }
+  }
+}
+
+.division {
+
+  &:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-bottom: 1px solid #eee;
+  }
+}
+
+.el-main {
+  padding: 0 !important;
+}
+
+/*nprogress 颜色*/
+#nprogress .bar {
+  background: #e91e63 !important;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+/* 滚动槽 */
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,0.3);
+    border-radius: 5px;
+}
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background: rgba(0,0,0,0.1);
+    -webkit-box-shadow: inset 0 0 0 rgba(0,0,0,0);
+}
+::-webkit-scrollbar-thumb:window-inactive {
+    background: rgba(220, 223, 230, .5);
+}

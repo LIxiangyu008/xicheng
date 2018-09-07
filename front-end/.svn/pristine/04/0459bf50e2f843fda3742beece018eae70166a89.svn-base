@@ -1,0 +1,100 @@
+{
+  "resultInfo": {
+    "success": true,
+    "message": null,
+    "data": {
+      "sum": 2,
+      "items": [{
+          "id": "9b9be46e-9afc-41c1-be13-2d3d9f897562",
+          "datasetId": "2010年",
+          "resId": null,
+          "serviceId": "1111111",
+          "fId": "111111111",
+          "startDate": 1328070840000,
+          "endDate": 1454301240000,
+          "version": 1,
+          "desc": "11111",
+          "aList": [{
+              "dcid": "cc92337e-526f-4f33-8caa-4da17cc73f2b",
+              "name": "jiejing",
+              "date": null,
+              "update": null,
+              "format": "png",
+              "size": 33,
+              "keywords": null,
+              "desc": null,
+              "attributes": "static/img/mapshow/jiejing.png"
+            },
+            {
+              "dcid": "7e043bdd-40ae-4991-8598-cb4c53a20d03",
+              "name": "shiliang_1",
+              "date": null,
+              "update": null,
+              "format": "png",
+              "size": 22,
+              "keywords": null,
+              "desc": null,
+              "attributes": "static/img/mapshow/shiliang_1.png"
+            },
+            {
+              "dcid": "7d232daf-0f23-4506-bee4-e1b5e9a9f59d",
+              "name": "video",
+              "date": null,
+              "update": null,
+              "format": "mp4",
+              "size": 123,
+              "keywords": null,
+              "desc": null,
+              "attributes": "./static/img/video/video.mp4"
+            }
+          ]
+        },
+        {
+          "id": "011f6b22-3d08-49bf-a832-fa136a555ecd",
+          "datasetId": "2011年",
+          "resId": null,
+          "serviceId": "222222222",
+          "fId": "222222",
+          "startDate": 1485923640000,
+          "endDate": 1485923640000,
+          "version": 1,
+          "desc": "2222",
+          "aList": [{
+              "dcid": "9064a8ba-7981-40f0-ad8d-c7f3bc70ba2c",
+              "name": "yingxiang_1",
+              "date": null,
+              "update": null,
+              "format": "png",
+              "size": 33,
+              "keywords": null,
+              "desc": null,
+              "attributes": "static/img/mapshow/yingxiang_1.png"
+            },
+            {
+              "dcid": "021993aa-9601-4dfc-a2e9-0bb0d94e0319",
+              "name": "yingxiang_2",
+              "date": null,
+              "update": null,
+              "format": "jpg",
+              "size": 22,
+              "keywords": null,
+              "desc": null,
+              "attributes": "static/img/mapshow/yingxiang_2.jpg"
+            },
+            {
+              "dcid": "81d08cb7-a870-450f-b423-2b3a36bccb0d",
+              "name": "video",
+              "date": null,
+              "update": null,
+              "format": "mp4",
+              "size": 123,
+              "keywords": null,
+              "desc": null,
+              "attributes": "static/img/video/video.mp4"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

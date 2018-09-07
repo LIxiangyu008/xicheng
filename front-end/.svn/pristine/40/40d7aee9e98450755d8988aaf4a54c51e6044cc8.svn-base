@@ -1,0 +1,287 @@
+<template>
+    <div class="xl-map" id="xl-map">
+        <SensorData :deviceName="deviceName" :deviceCode="deviceCode" />
+        <div class="baitasi-legend">
+            <ul>
+                <li>
+                    <span style="background-color:#ff6464">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span>&gt;{{legend[1]}}</span>
+                </li>
+                <li>
+                    <span style="background-color:#008000"> &nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span>{{legend[0]}} &lt; value &lt; {{legend[1]}}</span>
+                </li>
+                <li>
+                    <span style="background-color:#7f7f7f"> &nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span>无数据</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script>
+import SgsMap from "./../../map/SgsMap";
+import Vue from "vue";
+import L from "leaflet";
+import "./../../../../static/lib/iclient9-leaflet.js";
+import "./../../../../static/lib/iclient9-leaflet.css";
+import { ServiceConfig } from "@/config/app-config";
+import { getBaitasiData } from "@/apis/api";
+import { mapState } from "vuex";
+import { getSensorDataCollect, getSensor } from "../../../apis/api";
+import SensorInfoVue from "./SensorInfo.vue";
+import SensorData from "./SensorData";
+
+let XLmap = XLCONFIG.map; // static/config/app-config.js 配置
+let XLcrs = XLCONFIG.crs; // static/config/app-config.js 配置
+let XLthemeLayer = XLCONFIG.themeLayer; // static/config/app-config.js 配置
+let map,heatLayer;
+
+export default {
+    components: {
+        SensorData
+    },
+    data() {
+        return {
+            deviceName: "",
+            deviceCode: "",
+            markerLayerGroup: {}
+        };
+    },
+    computed: {
+        ...mapState({
+            quota: state => state.map.baitasiMarkerQuota,
+            baitisAnalysisData: state => state.map.baitisAnalysisData,
+        }),
+        legend() {
+            return QUOTACONFIG[this.quota].low;
+        }
+    },
+    watch: {
+        quota: {
+            handler: function (newVal, oldVal) {
+                this.addMarker(newVal);
+            }
+        }
+    },
+    methods: {
+        initEvent() {
+          EventBus.$on("clear-all", this.clearAll);
+          EventBus.$on("add-specialLayer", this.addSpecialLayer);
+        },
+        offEvent() {
+          EventBus.$off("clear-all", this.clearAll);
+          EventBus.$off("add-specialLayer", this.addSpecialLayer);
+
+        }
+        ,
+        // 初始化地图
+        initXlMap() {
+            // 设置平面坐标系
+            var crs = L.CRS.NonEarthCRS({
+                origin: L.point(XLcrs.bounds[0], XLcrs.bounds[3]),
+                bounds: L.bounds(
+                    [XLcrs.bounds[0], XLcrs.bounds[1]],
+                    [XLcrs.bounds[2], XLcrs.bounds[3]]
+                ),
+                resolutions: XLcrs.resolutions
+            });
+            // 地图初始化
+            map = L.map("xl-map", {
+                center: [XLmap.center[1], XLmap.center[0]], // 此处坐标为[Y , X]
+                crs: crs,
+                maxBounds: L.latLngBounds(
+                    L.latLng(XLcrs.bounds[1], XLcrs.bounds[0]),
+                    L.latLng(XLcrs.bounds[3], XLcrs.bounds[2])
+                ),
+                maxZoom: XLmap.maxZoom,
+                zoom: XLmap.zoom
+            });
+            var xl_wmts = L.supermap
+                .wmtsLayer(XLmap.url, {
+                    layer: XLmap.layer,
+                    style: XLmap.style,
+                    tilematrixSet: XLmap.tilematrixSet,
+                    format: XLmap.format
+                })
+                .addTo(map);
+            map.setView([306460.39585415, 500485.23391098], 5);
+            this.addMarker(this.quota);
+        },
+        async addMarker(quote) {
+            // map.removeLayer();
+
+            this.markerLayerGroup.clearLayers && this.markerLayerGroup.clearLayers();
+
+
+            let params = {
+                size: 0,
+                query: {
+                    bool: {
+                        filter: [
+                            {
+                                range: {
+                                    time: {
+                                        format: "yyyy-MM-dd HH:mm:ss",
+                                        gte: "2017-09-25 04:00:00",
+                                        lte: "2017-09-25 05:00:00"
+                                    }
+                                }
+                            },
+                            {
+                                match: {
+                                    indName: quote
+                                }
+                            }
+                        ]
+                    }
+                },
+                aggs: {
+                    device: {
+                        terms: {
+                            field: "deviceCode.keyword",
+                            size: 10000
+                        },
+                        aggs: {
+                            avg_value: {
+                                avg: {
+                                    field: "indValue"
+                                }
+                            },
+                            sum_value: {
+                                sum: {
+                                    field: "indValue"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            let data = await getSensorDataCollect(params);
+            let sensorData = await getSensor({ size: 10000 });
+            data = data.data.aggregations.device.buckets;
+            sensorData = sensorData.data.hits.hits;
+            let markerLayers = [];
+            for (let markerData of sensorData) {
+                if (markerData._source.GPSy && markerData._source.GPSx) {
+
+                    let datavalue = data.filter(function (value) {
+                        return value.key === markerData._source.deviceCode
+                    });
+
+                    let iconUrl = '';
+                    if (datavalue[0]) {
+                        if (quote === "CARFLOW" || quote === "HUMANFLOW") {
+                            if (datavalue[0].sum_value.value > QUOTACONFIG[quote].low[1]) {
+                                iconUrl = './static/img/colorfulMarker/582989.png'
+                            } else {
+                                iconUrl = './static/img/colorfulMarker/582983.png'
+                            }
+
+                        } else {
+                            if (datavalue[0].avg_value.value > QUOTACONFIG[quote].low[1]) {
+                                iconUrl = './static/img/colorfulMarker/582989.png'
+                            } else {
+                                iconUrl = './static/img/colorfulMarker/582983.png'
+                            }
+
+                        }
+
+                    }
+
+
+                    let icon = L.icon({
+                        iconUrl: iconUrl || "./static/img/colorfulMarker/582981.png",
+                        iconSize: [48, 48],
+                        iconAnchor: [24, 36],
+                        popupAnchor: [0, -20]
+                    });
+                    let marker = L.marker([markerData._source.GPSy, markerData._source.GPSx], {
+                        icon: icon
+                    })
+                        .bindPopup(
+                            new Vue({
+                                store: this.$store,
+                                render(h) {
+                                    return <SensorInfoVue data={markerData._source} />;
+                                }
+                            }).$mount().$el
+                        );
+                    markerLayers.push(marker);
+                }
+            }
+            this.markerLayerGroup = L.layerGroup(markerLayers);
+            map.addLayer(this.markerLayerGroup);
+            map.setView([306460.39585415, 500485.23391098], 5);
+
+        },
+        addSpecialLayer(index){
+            let currData = this.baitisAnalysisData[index];
+            this.addHeatMap(currData);
+            this.addMarkerLayer(currData);
+            debugger;
+        },
+        addMarkerLayer(data){
+            let markerLayers = [];
+            for (let markerData of data) {
+                if (markerData.GPSy && markerData.GPSx) {
+
+                    let icon = L.icon({
+                        iconUrl: "./static/img/blue-small.png",
+                        iconSize: [20, 20]
+                    });
+                    let marker = L.marker([markerData.GPSy, markerData.GPSx], {
+                        icon: icon
+                    }).bindPopup(
+                            new Vue({
+                                store: this.$store,
+                                render(h) {
+                                    return <SensorInfoVue data={markerData} />;
+                                }
+                            }).$mount().$el
+                        );
+                    markerLayers.push(marker);
+                }
+            }
+            this.markerLayerGroup = L.layerGroup(markerLayers);
+            map.addLayer(this.markerLayerGroup);
+        },
+        addHeatMap(data) {
+            let  heatRadius = 30;
+            let radius = parseInt(heatRadius);
+            radius = (radius > 0) ? radius : 0;
+            let heatPoints = [];
+            for (let i = 0; i < data.length; i++) {
+                heatPoints[i] = [data[i].GPSy, data[i].GPSx,data.mVal];
+            }
+            heatLayer = L.heatLayer(heatPoints, {
+                radius: radius,
+                minOpacity: 0.5
+            }).addTo(map);
+        },
+        clearAll(){
+            map.removeLayer(this.markerLayerGroup);
+            map.removeLayer(heatLayer);
+        }
+    },
+    mounted() {
+        this.initEvent();
+        this.initXlMap();
+    }
+};
+</script>
+
+<style lang="scss" scoped>
+.xl-map {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  .baitasi-legend {
+    z-index: 1000;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
+}
+</style>

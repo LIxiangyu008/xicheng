@@ -1,0 +1,73 @@
+<template lang="html">
+  <div class="monitor-header">
+    <div class="limit-card" v-for="item of cardData" :key="item.id">
+      <el-card class="box-card" :body-style="{ background: '#5098ea' }">
+        <div class="win-info">
+          <span class="info-title">{{item.title}}</span>
+          <span>{{item.time}}</span>
+          <div class="info-people">
+            <span class="people-num">{{item.num}}</span><span>人</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "MonitorHeader",
+  data() {
+    return {
+      cardData: [
+        {
+          id: 0,
+          title: "重点区域夜间人口",
+          time: "2018年7月",
+          num: "544827"
+        },
+        {
+          id: 1,
+          title: "重点区域日间人口",
+          time: "2018年7月",
+          num: "45639816"
+        },
+        {
+          id: 2,
+          title: "实时人口",
+          time: "2018年7月15日 19:00",
+          num: "35634816"
+        }
+      ]
+    };
+  },
+  methods: {}
+};
+</script>
+
+<style lang="scss" scoped>
+.monitor-header {
+  // text-align: center;
+  justify-content: space-between;
+  display: flex;
+  .limit-card {
+    display: inline-block;
+    width: 25%;
+    // margin-left: 13%;
+    margin-top: 10px;
+    .win-info {
+      color: #fff;
+      text-align: center;
+      .info-title {
+        margin-right: 20px;
+      }
+      .info-people {
+        margin-top: 20px;
+        .people-num {
+          font-size: 25px;
+        }
+      }
+    }
+  }
+}
+</style>
