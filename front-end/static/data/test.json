@@ -1,0 +1,19 @@
+{
+	"s3mModels":[
+		{
+			"name":"椅子",
+			"path": "http://support.supermap.com:8090/plugin/s3mLibrary/Chair.s3m",
+			"thumbnail": "http://support.supermap.com:8090/plugin/s3mLibrary/bench.png"
+		},
+		{
+			"name":"垃圾箱",
+			"path": "http://support.supermap.com:8090/plugin/s3mLibrary/Dustbin.s3m",
+			"thumbnail": "http://support.supermap.com:8090/plugin/s3mLibrary/Dustbin.png"
+		},
+		{
+			"name":"报亭",
+			"path": "http://support.supermap.com:8090/plugin/s3mLibrary/NewsStand.s3m",
+			"thumbnail": "http://support.supermap.com:8090/plugin/s3mLibrary/newspaper.png"
+		}
+	]
+}

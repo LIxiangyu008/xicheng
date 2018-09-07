@@ -1,0 +1,91 @@
+<template>
+<section class="functional-tabel">
+  <el-table :data="objectToArr" :max-height="300" :stripe="true" size="mini">
+    <el-table-column label="名称" prop="objKey"></el-table-column>
+    <el-table-column label="属性" prop="objValue"></el-table-column>
+  </el-table>
+  <el-button v-show="objData['HOUSECLASS'] == '楼房' || objData['HOUSECLASS'] == '平房'" v-on:click="dialogVisible = true" style="margin: 5px 0 5px 262px;">
+    查看房屋详情
+  </el-button>
+  <el-dialog :title="objData['BUILD_SITE']"   width="1170px"  max-height="600px"
+    :visible.sync="dialogVisible" :modal="false" :append-to-body="true">
+    <show-house-detail :buildingData="objData"></show-house-detail>
+  </el-dialog>
+</section>
+</template>
+
+<script>
+import Vue from 'vue'
+import showHouseDetail from './../map/showHouseDetail'
+export default {
+  components: {
+    showHouseDetail
+  },
+  data() {
+    return {
+      objectArr: [],
+      dialogVisible: false
+    }
+  },
+  mounted() {
+    // this.objectArr = this.objectToArr(this.objData) ;
+    // console.log(this.objectArr, this.objData);
+  },
+  props: {
+    objData: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    //是否过滤sm默认系统字段
+    filterSM: {
+      type: Boolean,
+      default: true
+    },
+    //是否过滤非中文字段
+    filterChinese: {
+      type: Boolean,
+      default: false
+    },
+  },
+  computed: {
+    objectToArr() {
+      let self = this,
+        _tableData = [],
+        _keys = Object.keys(this.objData);
+      if (this.filterSM) {
+        _keys = _keys.filter(item => !item.toLowerCase().startsWith('sm'));
+      }
+      if (this.filterChinese) {
+        _keys = _keys.filter(item => /.*[\u4e00-\u9fa5]+.*/.test(item));
+      }
+      _tableData = _keys.map((item) => {
+        return {
+          objKey: item,
+          objValue: self.objData[item]
+        }
+      })
+      return _tableData;
+    }
+  },
+  methods: {
+
+  }
+}
+</script>
+
+<style lang="scss" >
+.functional-tabel {
+    width: 400px;
+
+    .el-table {
+      border-radius: 10px 10px 0 0;
+    }
+}
+.el-dialog__body{
+    margin: 0 20px;
+    // border-top: #b3b3b3 1px solid;
+    padding: 10px 0;
+}
+</style>
